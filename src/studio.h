@@ -57,12 +57,6 @@
 #define KEYMAP_DAT_PATH TIC_LOCAL_VERSION KEYMAP_DAT
 
 #define CART_EXT ".tic"
-#define PROJECT_LUA_EXT ".lua"
-#define PROJECT_MOON_EXT ".moon"
-#define PROJECT_JS_EXT ".js"
-#define PROJECT_WREN_EXT ".wren"
-#define PROJECT_SQUIRREL_EXT ".nut"
-#define PROJECT_FENNEL_EXT ".fnl"
 
 #define SHOW_TOOLTIP(FORMAT, ...)           \
 {                                           \
@@ -119,10 +113,6 @@ void resumeRunMode();
 EditorMode getStudioMode();
 void exitStudio();
 
-u32 zip(u8* dest, size_t destSize, const u8* source, size_t size);
-u32 unzip(u8* dest, size_t bufSize, const u8* source, size_t size);
-
-void str2buf(const char* str, s32 size, void* buf, bool flip);
 void toClipboard(const void* data, s32 size, bool flip);
 bool fromClipboard(void* data, s32 size, bool flip, bool remove_white_spaces);
 
@@ -157,7 +147,6 @@ typedef void(*DialogCallback)(bool yes, void* data);
 void showDialog(const char** text, s32 rows, DialogCallback callback, void* data);
 void hideDialog();
 
-void hideGameMenu();
 
 bool studioCartChanged();
 void playSystemSfx(s32 id);
@@ -165,12 +154,16 @@ void playSystemSfx(s32 id);
 void runGameFromSurf();
 void gotoCode();
 void gotoSurf();
-void exitFromGameMenu();
+
+void showGameMenu();
+void hideGameMenu();
+void exitGameMenu();
+
 void runProject();
 void drawBGAnimation(tic_mem* tic, s32 ticks);
 
 tic_tiles* getBankTiles();
-tic_palette* getBankPalette();
+tic_palette* getBankPalette(bool ovr);
 tic_flags* getBankFlags();
 tic_map* getBankMap();
 

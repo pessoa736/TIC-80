@@ -162,20 +162,23 @@ struct tic_mem
         s32 size;
     } samples;
 
+#if defined(_3DS)
+    u32 *screen;
+#else
     u32 screen[TIC80_FULLWIDTH * TIC80_FULLHEIGHT];
+#endif
+    tic80_pixel_color_format screen_format;
 };
 
 tic_mem* tic_core_create(s32 samplerate);
 void tic_core_close(tic_mem* memory);
 void tic_core_pause(tic_mem* memory);
 void tic_core_resume(tic_mem* memory);
-void tic_core_load(tic_cartridge* rom, const u8* buffer, s32 size);
-s32  tic_core_save(const tic_cartridge* rom, u8* buffer);
 void tic_core_tick_start(tic_mem* memory);
 void tic_core_tick(tic_mem* memory, tic_tick_data* data);
 void tic_core_tick_end(tic_mem* memory);
-void tic_core_blit(tic_mem* tic);
-void tic_core_blit_ex(tic_mem* tic, tic_scanline scanline, tic_overline overline, void* data);
+void tic_core_blit(tic_mem* tic, tic80_pixel_color_format fmt);
+void tic_core_blit_ex(tic_mem* tic, tic80_pixel_color_format fmt, tic_scanline scanline, tic_overline overline, void* data);
 const tic_script_config* tic_core_script_config(tic_mem* memory);
 
 typedef struct

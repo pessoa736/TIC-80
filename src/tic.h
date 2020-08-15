@@ -32,6 +32,7 @@
 #define TIC_ALTFONT_WIDTH 4
 #define TIC_PALETTE_BPP 4
 #define TIC_PALETTE_SIZE (1 << TIC_PALETTE_BPP)
+#define TIC_PALETTES 2
 #define TIC_SPRITESIZE 8
 
 #define TIC_DEFAULT_BIT_DEPTH 4
@@ -86,10 +87,13 @@
 #define WAVE_MAX_VALUE ((1 << WAVE_VALUE_BITS) - 1)
 #define WAVE_SIZE (WAVE_VALUES * WAVE_VALUE_BITS / BITS_IN_BYTE)
 
-#define TIC_CODE_SIZE (64 * 1024) // 64K
 
 #define TIC_BANK_BITS 3
 #define TIC_BANKS (1 << TIC_BANK_BITS)
+
+#define TIC_CODE_BANK_SIZE (64 * 1024) // 64K
+#define TIC_CODE_SIZE (TIC_CODE_BANK_SIZE * TIC_BANKS)
+
 #define TIC_GAMEPADS (sizeof(tic80_gamepads) / sizeof(tic80_gamepad))
 
 #define SFX_NOTES {"C-", "C#", "D-", "D#", "E-", "F-", "F#", "G-", "G#", "A-", "A#", "B-"}
@@ -357,9 +361,14 @@ typedef struct
     u8 data[TIC_SPRITESIZE * TIC_SPRITESIZE * TIC_PALETTE_BPP / BITS_IN_BYTE];
 } tic_tile;
 
-typedef struct
+typedef union
 {
     char data[TIC_CODE_SIZE];
+
+    struct
+    {
+        char data[TIC_CODE_BANK_SIZE];
+    } banks[TIC_BANKS];
 } tic_code;
 
 typedef struct 
@@ -399,8 +408,14 @@ typedef struct
     tic_map     map;
     tic_sfx     sfx;
     tic_music   music;
-    tic_palette palette;
     tic_flags   flags;
+
+    struct
+    {
+        tic_palette scn;
+        tic_palette ovr;
+    } palette;
+
 } tic_bank;
 
 typedef struct

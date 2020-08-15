@@ -23,6 +23,8 @@
 #include "tools.h"
 
 #include <string.h>
+#include <stdlib.h>
+#include <zlib.h>
 
 extern void tic_tool_poke4(void* addr, u32 index, u8 value);
 extern u8 tic_tool_peek4(const void* addr, u32 index);
@@ -91,7 +93,7 @@ u32 tic_tool_find_closest_color(const tic_rgb* palette, const gif_color* color)
     return closetColor;
 }
 
-u32* tic_tool_palette_blit(const tic_palette* srcpal)
+u32* tic_tool_palette_blit(const tic_palette* srcpal, tic80_pixel_color_format fmt)
 {
     static u32 pal[TIC_PALETTE_SIZE];
 
@@ -101,10 +103,32 @@ u32* tic_tool_palette_blit(const tic_palette* srcpal)
 
     while(src != end)
     {
-        *dst++ = src->r;
-        *dst++ = src->g;
-        *dst++ = src->b;
-        *dst++ = 0xff;
+        switch(fmt){
+            case TIC80_PIXEL_COLOR_BGRA8888:
+                *dst++ = src->b;
+                *dst++ = src->g;
+                *dst++ = src->r;
+                *dst++ = 0xff;
+                break;
+            case TIC80_PIXEL_COLOR_RGBA8888:
+                *dst++ = src->r;
+                *dst++ = src->g;
+                *dst++ = src->b;
+                *dst++ = 0xff;
+                break;
+            case TIC80_PIXEL_COLOR_ABGR8888:
+                *dst++ = 0xff;
+                *dst++ = src->b;
+                *dst++ = src->g;
+                *dst++ = src->r;
+                break;
+            case TIC80_PIXEL_COLOR_ARGB8888:
+                *dst++ = 0xff;
+                *dst++ = src->r;
+                *dst++ = src->g;
+                *dst++ = src->b;
+                break;
+        }
         src++;
     }
 
@@ -134,4 +158,36 @@ bool tic_tool_is_noise(const tic_waveform* wave)
             return false;
 
     return true;
+}
+
+void tic_tool_str2buf(const char* str, s32 size, void* buf, bool flip)
+{
+    char val[] = "0x00";
+    const char* ptr = str;
+
+    for(s32 i = 0; i < size/2; i++)
+    {
+        if(flip)
+        {
+            val[3] = *ptr++;
+            val[2] = *ptr++;
+        }
+        else
+        {
+            val[2] = *ptr++;
+            val[3] = *ptr++;
+        }
+
+        ((u8*)buf)[i] = (u8)strtol(val, NULL, 16);
+    }
+}
+
+u32 tic_tool_zip(u8* dest, size_t destSize, const u8* source, size_t size)
+{
+    return compress2(dest, (unsigned long*)&destSize, source, size, Z_BEST_COMPRESSION) == Z_OK ? destSize : 0;
+}
+
+u32 tic_tool_unzip(u8* dest, size_t destSize, const u8* source, size_t size)
+{
+    return uncompress(dest, (unsigned long*)&destSize, source, size) == Z_OK ? destSize : 0;
 }

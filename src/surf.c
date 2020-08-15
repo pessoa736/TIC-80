@@ -23,6 +23,7 @@
 #include "surf.h"
 #include "fs.h"
 #include "console.h"
+#include "project.h"
 
 #include "ext/gif.h"
 
@@ -286,10 +287,12 @@ static void drawMenu(Surf* surf, s32 x, s32 y)
     {
         const char* name = surf->menu.items[i].label;
 
-        s32 ym = Height * i + y - surf->menu.pos*MENU_HEIGHT - surf->menu.anim + (MENU_HEIGHT - TIC_FONT_HEIGHT)/2;
+        s32 ym = Height * i + y - surf->menu.pos*MENU_HEIGHT - (surf->menu.anim * surf->menu.anim_target) + (MENU_HEIGHT - TIC_FONT_HEIGHT)/2;
 
-        tic_api_print(tic, name, x + MAIN_OFFSET, ym + 1, tic_color_0, false, 1, false);
-        tic_api_print(tic, name, x + MAIN_OFFSET, ym, tic_color_12, false, 1, false);
+        if (ym > (-(TIC_FONT_HEIGHT + 1)) && ym <= TIC80_HEIGHT) {
+            tic_api_print(tic, name, x + MAIN_OFFSET, ym + 1, tic_color_0, false, 1, false);
+            tic_api_print(tic, name, x + MAIN_OFFSET, ym, tic_color_12, false, 1, false);
+        }
     }
 }
 
@@ -439,7 +442,7 @@ static void updateMenuItemCover(Surf* surf, const u8* cover, s32 size)
                         s32 colorIndex = 0;
 
                         // init first color with default background
-                        palette->colors[0] = *getConfig()->cart->bank0.palette.colors;
+                        palette->colors[0] = *getConfig()->cart->bank0.palette.scn.colors;
 
                         for(s32 c = 0; c < TIC80_WIDTH; c++)
                         {
@@ -509,9 +512,9 @@ static void loadCover(Surf* surf)
             {
 
                 if(hasProjectExt(item->name))
-                    surf->console->loadProject(surf->console, item->name, data, size, cart);
+                    tic_project_load(item->name, data, size, cart);
                 else
-                    tic_core_load(cart, data, size);
+                    tic_cart_load(cart, data, size);
 
                 if(cart->cover.size)
                     updateMenuItemCover(surf, cart->cover.data, cart->cover.size);
@@ -623,26 +626,7 @@ static void onPlayCart(Surf* surf)
 {
     MenuItem* item = &surf->menu.items[surf->menu.pos];
 
-    if(item->project)
-    {
-        tic_cartridge* cart = malloc(sizeof(tic_cartridge));
-
-        if(cart)
-        {
-            s32 size = 0;
-            void* data = fsLoadFile(surf->fs, item->name, &size);
-
-            surf->console->loadProject(surf->console, item->name, data, size, cart);
-
-            memcpy(&surf->tic->cart, cart, sizeof(tic_cartridge));
-
-            studioRomLoaded();
-
-            free(cart);
-        }
-    }
-    else
-        surf->console->load(surf->console, item->name, item->hash);
+    surf->console->load(surf->console, item->name, item->hash);
 
     runGameFromSurf();
 }
@@ -684,27 +668,32 @@ static void processAnim(Surf* surf)
 
     }
 
-    if(surf->menu.anim)
+    if(surf->menu.anim > 0)
     {
-        if(surf->menu.anim < 0) surf->menu.anim--;
-        if(surf->menu.anim > 0) surf->menu.anim++;
-
-        if(surf->menu.anim <= -Frames)
-        {
-            surf->menu.anim = 0;
-            surf->menu.pos--;
-
-            if(surf->menu.pos < 0)
-                surf->menu.pos = surf->menu.count-1;
-        }
+        surf->menu.anim++;
 
         if(surf->menu.anim >= Frames)
         {
-            surf->menu.anim = 0;
-            surf->menu.pos++;
+            s32 old_pos = surf->menu.pos;
 
-            if(surf->menu.pos >= surf->menu.count)
-                surf->menu.pos = 0;
+            surf->menu.anim = 0;
+            surf->menu.pos += surf->menu.anim_target;
+
+            if(surf->menu.pos < 0)
+            {
+                if(old_pos == 0)
+                    surf->menu.pos = surf->menu.count - 1;
+                else
+                    surf->menu.pos = 0;
+            }
+            else if(surf->menu.pos >= surf->menu.count)
+            {
+                if(old_pos == surf->menu.count - 1)
+                    surf->menu.pos = 0;
+                else
+                    surf->menu.pos = surf->menu.count - 1;
+
+            }
         }
     }
 }
@@ -725,16 +714,31 @@ static void processGamepad(Surf* surf)
 
         if(tic_api_btnp(tic, Up, Hold, Period))
         {
-            surf->menu.anim = -1;
+            surf->menu.anim = 1;
+            surf->menu.anim_target = -1;
 
             playSystemSfx(2);
         }
-
-        if(tic_api_btnp(tic, Down, Hold, Period))
+        else if(tic_api_btnp(tic, Down, Hold, Period))
         {
             surf->menu.anim = 1;
+            surf->menu.anim_target = 1;
 
             playSystemSfx(2);
+        }
+        else if(
+            tic_api_btnp(tic, Left, Hold, Period)
+            || tic_api_keyp(tic, tic_key_pageup, Hold, Period))
+        {
+            surf->menu.anim = 1;
+            surf->menu.anim_target = -5;
+        }
+        else if(
+            tic_api_btnp(tic, Right, Hold, Period)
+            || tic_api_keyp(tic, tic_key_pagedown, Hold, Period))
+        {
+            surf->menu.anim = 1;
+            surf->menu.anim_target = 5;
         }
 
         if(tic_api_btnp(tic, A, -1, -1))

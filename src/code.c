@@ -275,7 +275,7 @@ static void updateEditor(Code* code)
 
     {
         sprintf(code->statusLine, "line %i/%i col %i", line + 1, getLinesCount(code) + 1, column + 1);
-        sprintf(code->statusSize, "%i/%i", (u32)strlen(code->src), TIC_CODE_SIZE);
+        sprintf(code->statusSize, "size %i", (u32)strlen(code->src));
     }
 }
 
@@ -1338,7 +1338,6 @@ static void processMouse(Code* code)
                 code->scroll.start.x = getMouseX() + code->scroll.x * getFontWidth(code);
                 code->scroll.start.y = getMouseY() + code->scroll.y * STUDIO_TEXT_HEIGHT;
             }
-
         }
     }
 }

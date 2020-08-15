@@ -36,6 +36,7 @@
 #include "dialog.h"
 #include "menu.h"
 #include "surf.h"
+#include "project.h"
 
 #include "fs.h"
 
@@ -43,7 +44,6 @@
 #include "ext/md5.h"
 #include "wave_writer.h"
 
-#include <zlib.h>
 #include <ctype.h>
 
 #include <lua.h>
@@ -182,8 +182,6 @@ static struct
 
     FileSystem* fs;
 
-    bool missedFrame;
-
     s32 argc;
     char **argv;
     s32 samplerate;
@@ -239,7 +237,6 @@ static struct
         .frames = 0,
     },
 
-    .missedFrame = false,
     .argc = 0,
     .argv = NULL,
 };
@@ -371,16 +368,6 @@ const char* studioExportMusic(s32 track)
     return WavPath;
 }
 
-u32 zip(u8* dest, size_t destSize, const u8* source, size_t size)
-{
-    return compress2(dest, (unsigned long*)&destSize, source, size, Z_BEST_COMPRESSION) == Z_OK ? destSize : 0;
-}
-
-u32 unzip(u8* dest, size_t destSize, const u8* source, size_t size)
-{
-    return uncompress(dest, (unsigned long*)&destSize, source, size) == Z_OK ? destSize : 0;
-}
-
 void sfx_stop(tic_mem* tic, s32 channel)
 {
     tic_api_sfx(tic, -1, 0, 0, -1, channel, MAX_VOLUME, SFX_DEF_SPEED);
@@ -440,9 +427,10 @@ tic_map* getBankMap()
     return &impl.studio.tic->cart.banks[impl.bank.index.map].map;
 }
 
-tic_palette* getBankPalette()
+tic_palette* getBankPalette(bool ovr)
 {
-    return &impl.studio.tic->cart.banks[impl.bank.index.sprites].palette;
+    tic_bank* bank = &impl.studio.tic->cart.banks[impl.bank.index.sprites];
+    return ovr ? &bank->palette.ovr : &bank->palette.scn;
 }
 
 tic_flags* getBankFlags()
@@ -539,28 +527,6 @@ void toClipboard(const void* data, s32 size, bool flip)
     }
 }
 
-void str2buf(const char* str, s32 size, void* buf, bool flip)
-{
-    char val[] = "0x00";
-    const char* ptr = str;
-
-    for(s32 i = 0; i < size/2; i++)
-    {
-        if(flip)
-        {
-            val[3] = *ptr++;
-            val[2] = *ptr++;
-        }
-        else
-        {
-            val[2] = *ptr++;
-            val[3] = *ptr++;
-        }
-
-        ((u8*)buf)[i] = (u8)strtol(val, NULL, 16);
-    }
-}
-
 static void removeWhiteSpaces(char* str)
 {
     s32 i = 0;
@@ -588,7 +554,7 @@ bool fromClipboard(void* data, s32 size, bool flip, bool remove_white_spaces)
                             
                 bool valid = strlen(clipboard) == size * 2;
 
-                if(valid) str2buf(clipboard, strlen(clipboard), data, flip);
+                if(valid) tic_tool_str2buf(clipboard, strlen(clipboard), data, flip);
 
                 getSystem()->freeClipboardText(clipboard);
 
@@ -696,13 +662,6 @@ static void drawExtrabar(tic_mem* tic)
 const StudioConfig* getConfig()
 {
     return &impl.config->data;
-}
-
-static bool isGamepadMode()
-{
-    return impl.mode == TIC_RUN_MODE
-        || impl.mode == TIC_SURF_MODE
-        || impl.mode == TIC_MENU_MODE;
 }
 
 #if defined (TIC80_PRO)
@@ -1016,7 +975,8 @@ ClipboardEvent getClipboardEvent()
 static void showPopupMessage(const char* text)
 {
     impl.popup.counter = POPUP_DUR;
-    strcpy(impl.popup.message, text);
+    memset(impl.popup.message, '\0', sizeof impl.popup.message);
+    strncpy(impl.popup.message, text, sizeof(impl.popup.message) - 1);
 }
 
 static void exitConfirm(bool yes, void* data)
@@ -1096,7 +1056,7 @@ void runGameFromSurf()
     impl.prevMode = TIC_SURF_MODE;
 }
 
-void exitFromGameMenu()
+void exitGameMenu()
 {
     if(impl.prevMode == TIC_SURF_MODE)
     {
@@ -1171,7 +1131,7 @@ void changeStudioMode(s32 dir)
     }
 }
 
-static void showGameMenu()
+void showGameMenu()
 {
     tic_core_pause(impl.studio.tic);
     tic_api_reset(impl.studio.tic);
@@ -1370,8 +1330,22 @@ static void saveProject()
 
     if(rom == CART_SAVE_OK)
     {
-        char buffer[TICNAME_MAX];
-        snprintf(buffer, TICNAME_MAX, "%s SAVED :)", impl.console->romName);
+        char buffer[STUDIO_TEXT_BUFFER_WIDTH];
+        char str_saved[] = " SAVED :)";
+
+        s32 name_len = strlen(impl.console->romName);
+        if (name_len + strlen(str_saved) > sizeof(buffer)){
+            char subbuf[sizeof(buffer) - sizeof(str_saved) - 5];
+            memset(subbuf, '\0', sizeof subbuf);
+            strncpy(subbuf, impl.console->romName, sizeof subbuf-1);
+
+            snprintf(buffer, sizeof(buffer), "%s[...]%s", subbuf, str_saved);
+        }
+        else
+        {
+            snprintf(buffer, sizeof(buffer), "%s%s", impl.console->romName, str_saved);
+        }
+
 
         for(s32 i = 0; i < (s32)strlen(buffer); i++)
             buffer[i] = toupper(buffer[i]);
@@ -1402,7 +1376,7 @@ static void setCoverImage()
     {
         enum {Pitch = TIC80_FULLWIDTH*sizeof(u32)};
 
-        tic_core_blit(tic);
+        tic_core_blit(tic, TIC80_PIXEL_COLOR_RGBA8888);
 
         u32* buffer = malloc(TIC80_WIDTH * TIC80_HEIGHT * sizeof(u32));
 
@@ -1646,33 +1620,9 @@ static void drawRecordLabel(u32* frame, s32 sx, s32 sy, const u32* color)
     }
 }
 
-static void drawDesyncLabel(u32* frame)
+static bool isRecordFrame(void)
 {
-    if(getConfig()->showSync && impl.missedFrame)
-    {
-        static const u16 DesyncLabel[] =
-        {
-            0b0110101010010011,
-            0b1000101011010100,
-            0b1110111010110100,
-            0b0010001010010100,
-            0b1100110010010011,
-        };
-        
-        enum{sx = TIC80_WIDTH-24, sy = 8, Cols = sizeof DesyncLabel[0]*BITS_IN_BYTE, Rows = COUNT_OF(DesyncLabel)};
-
-        const u32* pal = tic_tool_palette_blit(&impl.config->cart.bank0.palette);
-        const u32* color = &pal[tic_color_6];
-
-        for(s32 y = 0; y < Rows; y++)
-        {
-            for(s32 x = 0; x < Cols; x++)
-            {
-                if(DesyncLabel[y] & (1 << x))
-                    memcpy(&frame[sx + Cols - 1 - x + ((y+sy) << TIC80_FULLWIDTH_BITS)], color, sizeof *color);
-            }
-        }
-    }
+    return impl.video.record;
 }
 
 static void recordFrame(u32* pixels)
@@ -1686,7 +1636,7 @@ static void recordFrame(u32* pixels)
 
             if(impl.video.frame % TIC80_FRAMERATE < TIC80_FRAMERATE / 2)
             {
-                const u32* pal = tic_tool_palette_blit(&impl.config->cart.bank0.palette);
+                const u32* pal = tic_tool_palette_blit(&impl.config->cart.bank0.palette.scn, TIC80_PIXEL_COLOR_RGBA8888);
                 drawRecordLabel(pixels, TIC80_WIDTH-24, 8, &pal[tic_color_2]);
             }
 
@@ -1803,10 +1753,24 @@ static void renderStudio()
         memset(tic->ram.registers, 0, sizeof tic->ram.registers);
 
     tic_core_tick_end(impl.studio.tic);
+
+    switch(impl.mode)
+    {
+    case TIC_RUN_MODE: break;
+    case TIC_SURF_MODE:
+    case TIC_MENU_MODE:
+        tic->input.data = -1;
+        break;
+    default:
+        tic->input.data = -1;
+        tic->input.gamepad = 0;
+    }
 }
 
 static void updateSystemFont()
 {
+    tic_mem* tic = impl.studio.tic;
+
     memset(impl.systemFont.data, 0, sizeof(tic_font));
 
     for(s32 i = 0; i < TIC_FONT_CHARS; i++)
@@ -1814,6 +1778,8 @@ static void updateSystemFont()
             for(s32 x = 0; x < TIC_SPRITESIZE; x++)
                 if(tic_tool_peek4(&impl.config->cart.bank0.sprites.data[i], TIC_SPRITESIZE*y + x))
                     impl.systemFont.data[i*BITS_IN_BYTE+y] |= 1 << x;
+
+    memcpy(tic->ram.font.data, impl.systemFont.data, sizeof(tic_font));
 }
 
 void studioConfigChanged()
@@ -1877,13 +1843,13 @@ static void processMouseStates()
 
 static void studioTick()
 {
+    tic_mem* tic = impl.studio.tic;
+
     processShortcuts();
     processMouseStates();
     processGamepadMapping();
 
     renderStudio();
-
-    tic_mem* tic = impl.studio.tic;
     
     {
         tic_scanline scanline = NULL;
@@ -1926,17 +1892,16 @@ static void studioTick()
 
         if(impl.mode != TIC_RUN_MODE)
         {
-            memcpy(tic->ram.vram.palette.data, getConfig()->cart->bank0.palette.data, sizeof(tic_palette));
+            memcpy(tic->ram.vram.palette.data, getConfig()->cart->bank0.palette.scn.data, sizeof(tic_palette));
             memcpy(tic->ram.font.data, impl.systemFont.data, sizeof(tic_font));
         }
 
         data
-            ? tic_core_blit_ex(tic, scanline, overline, data)
-            : tic_core_blit(tic);
+            ? tic_core_blit_ex(tic, tic->screen_format, scanline, overline, data)
+            : tic_core_blit(tic, tic->screen_format);
 
-        recordFrame(tic->screen);
-        drawDesyncLabel(tic->screen);
-    
+        if(isRecordFrame())
+            recordFrame(tic->screen);
     }
 
     drawPopup();
@@ -2042,7 +2007,6 @@ Studio* studioInit(s32 argc, char **argv, s32 samplerate, const char* folder, Sy
     impl.studio.updateProject = updateStudioProject;
     impl.studio.exit = exitStudio;
     impl.studio.config = getConfig;
-    impl.studio.isGamepadMode = isGamepadMode;
 
     return &impl.studio;
 }

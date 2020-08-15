@@ -28,11 +28,16 @@
 #include <stddef.h>
 #include <time.h>
 
+#ifdef _3DS
+#include <3ds.h>
+#endif
+
 #include "ticapi.h"
 #include "tools.h"
 #include "tilesheet.h"
 #include "machine.h"
 #include "ext/gif.h"
+#include "cart.h"
 
 #define CLOCKRATE (255<<13)
 #define ENVELOPE_FREQ_SCALE 2
@@ -41,36 +46,7 @@
 #define PIANO_START 8
 #define TRANSPARENT_COLOR 255
 
-typedef enum
-{
-    CHUNK_DUMMY,        // 0
-    CHUNK_TILES,        // 1
-    CHUNK_SPRITES,      // 2
-    CHUNK_COVER,        // 3
-    CHUNK_MAP,          // 4
-    CHUNK_CODE,         // 5
-    CHUNK_FLAGS,        // 6
-    CHUNK_TEMP2,        // 7
-    CHUNK_TEMP3,        // 8
-    CHUNK_SAMPLES,      // 9
-    CHUNK_WAVEFORM,     // 10
-    CHUNK_TEMP4,        // 11
-    CHUNK_PALETTE,      // 12
-    CHUNK_PATTERNS_DEP, // 13 - deprecated chunk
-    CHUNK_MUSIC,        // 14
-    CHUNK_PATTERNS,     // 15
-} ChunkType;
-
-typedef struct
-{
-    ChunkType type:5;
-    u32 bank:TIC_BANK_BITS;
-    u32 size:16; // max chunk size is 64K
-    u32 temp:8;
-} Chunk;
-
 STATIC_ASSERT(tic_bank_bits, TIC_BANK_BITS == 3);
-STATIC_ASSERT(tic_chunk_size, sizeof(Chunk) == 4);
 STATIC_ASSERT(tic_map, sizeof(tic_map) < 1024*32);
 STATIC_ASSERT(tic_sample, sizeof(tic_sample) == 66);
 STATIC_ASSERT(tic_track_pattern, sizeof(tic_track_pattern) == 3*MUSIC_PATTERN_ROWS);
@@ -180,7 +156,7 @@ static tic_tilesheet getTileSheetFromSegment(tic_mem* memory, u8 segment)
 static void resetPalette(tic_mem* memory)
 {
     static const u8 DefaultMapping[] = {16, 50, 84, 118, 152, 186, 220, 254};
-    memcpy(memory->ram.vram.palette.data, memory->cart.bank0.palette.data, sizeof(tic_palette));
+    memcpy(memory->ram.vram.palette.data, memory->cart.bank0.palette.scn.data, sizeof(tic_palette));
     memcpy(memory->ram.vram.mapping, DefaultMapping, sizeof DefaultMapping);
 }
 
@@ -214,7 +190,7 @@ static void setPixelOvr(tic_mem* tic, s32 x, s32 y, u8 color)
 {
     tic_machine* machine = (tic_machine*)tic;
     
-    *getOvrAddr(tic, x, y) = *(machine->state.ovr.palette + color);
+    *getOvrAddr(tic, x, y) = *(machine->state.ovr.raw + color);
 }
 
 static u8 getPixelOvr(tic_mem* tic, s32 x, s32 y)
@@ -222,7 +198,7 @@ static u8 getPixelOvr(tic_mem* tic, s32 x, s32 y)
     tic_machine* machine = (tic_machine*)tic;
     
     u32 color = *getOvrAddr(tic, x, y);
-    u32* pal = machine->state.ovr.palette;
+    u32* pal = machine->state.ovr.raw;
 
     for(s32 i = 0; i < TIC_PALETTE_SIZE; i++, pal++)
         if(*pal == color)
@@ -271,24 +247,34 @@ static void drawHLineDma(tic_mem* memory, s32 xl, s32 xr, s32 y, u8 color)
 static void drawHLineOvr(tic_mem* tic, s32 x1, s32 x2, s32 y, u8 color)
 {
     tic_machine* machine = (tic_machine*)tic;
-    u32 final_color = *(machine->state.ovr.palette + color);
+    u32 final_color = *(machine->state.ovr.raw + color);
     for(s32 x = x1; x < x2; ++x) {
         *getOvrAddr(tic, x, y) = final_color;
     }
 }
 
 
+#define EARLY_CLIP(x, y, width, height) \
+    ( \
+        (((y)+(height)-1) < machine->state.clip.t) \
+        || (((x)+(width)-1) < machine->state.clip.l) \
+        || ((y) >= machine->state.clip.b) \
+        || ((x) >= machine->state.clip.r) \
+    )
+
 static void drawHLine(tic_machine* machine, s32 x, s32 y, s32 width, u8 color)
 {
     if(y < machine->state.clip.t || machine->state.clip.b <= y) return;
+
     s32 xl = MAX(x, machine->state.clip.l);
     s32 xr = MIN(x + width, machine->state.clip.r);
+
     machine->state.drawhline(&machine->memory, xl, xr, y, color);
 }
 
 static void drawVLine(tic_machine* machine, s32 x, s32 y, s32 height, u8 color)
 {
-    if(x < 0 || x >= TIC80_WIDTH) return;
+    if(x < machine->state.clip.l || machine->state.clip.r <= x) return;
 
     s32 yl = y < 0 ? 0 : y;
     s32 yr = y + height >= TIC80_HEIGHT ? TIC80_HEIGHT : y + height;
@@ -361,6 +347,8 @@ static void drawTile(tic_machine* machine, tic_tileptr* tile, s32 x, s32 y, u8* 
         return;
     }
 
+    if (EARLY_CLIP(x, y, TIC_SPRITESIZE * scale, TIC_SPRITESIZE * scale)) return;
+
     for(s32 py=0; py < TIC_SPRITESIZE; py++, y+=scale)
     {
         s32 xx = x;
@@ -391,9 +379,11 @@ static void drawSprite(tic_machine* machine, s32 index, s32 x, s32 y, s32 w, s32
     else
     {
         s32 step = TIC_SPRITESIZE * scale;
-        s32 cols = sheet.segment.sheet_width;
+        s32 cols = sheet.segment->sheet_width;
 
         const tic_flip vert_horz_flip = tic_horz_flip | tic_vert_flip;
+
+        if (EARLY_CLIP(x, y, w * step, h * step)) return;
 
         for(s32 i = 0; i < w; i++)
         {
@@ -482,6 +472,8 @@ static s32 drawChar(tic_machine* machine, tic_tileptr* font_char, s32 x, s32 y, 
     }
     s32 width = end - start;
 
+    if (EARLY_CLIP(x, y, Size * scale, Size * scale)) return width;
+
     s32 colStart = start, colStep = 1, rowStart = 0 , rowStep = 1;
 
     for(s32 i=0, col=colStart, xs = x; i < width; i++, col+=colStep, xs+=scale)
@@ -496,7 +488,7 @@ static s32 drawChar(tic_machine* machine, tic_tileptr* font_char, s32 x, s32 y, 
     return width;
 }
 
-s32 drawText(tic_machine* machine, tic_tilesheet* font_face, const char* text, s32 x, s32 y, s32 width, s32 height, bool fixed, u8* mapping, s32 scale, bool alt)
+static s32 drawText(tic_machine* machine, tic_tilesheet* font_face, const char* text, s32 x, s32 y, s32 width, s32 height, bool fixed, u8* mapping, s32 scale, bool alt)
 {
     s32 pos = x;
     s32 MAX = x;
@@ -548,25 +540,16 @@ static void setChannelData(tic_mem* memory, s32 index, s32 note, s32 octave, s32
     resetSfxPos(channel);
 }
 
-static void resetChannelRegistersData(tic_mem* memory, s32 channel)
-{
-    tic_machine* machine = (tic_machine*)memory;
-    memset(&machine->state.registers.left[channel], 0, sizeof(tic_sound_register_data));
-    memset(&machine->state.registers.right[channel], 0, sizeof(tic_sound_register_data));
-}
-
 static void setMusicChannelData(tic_mem* memory, s32 index, s32 note, s32 octave, s32 left, s32 right, s32 channel)
 {
     tic_machine* machine = (tic_machine*)memory;
     setChannelData(memory, index, note, octave, -1, &machine->state.music.channels[channel], left, right, SFX_DEF_SPEED);
-    resetChannelRegistersData(memory, channel);
 }
 
 static void setSfxChannelData(tic_mem* memory, s32 index, s32 note, s32 octave, s32 duration, s32 channel, s32 left, s32 right, s32 speed)
 {
     tic_machine* machine = (tic_machine*)memory;
     setChannelData(memory, index, note, octave, duration, &machine->state.sfx.channels[channel], left, right, speed);
-    resetChannelRegistersData(memory, channel);
 }
 
 static void resetMusicChannels(tic_mem* memory)
@@ -697,9 +680,13 @@ void tic_core_pause(tic_mem* memory)
 
     memcpy(&machine->pause.state, &machine->state, sizeof(tic_machine_state_data));
     memcpy(&machine->pause.ram, &memory->ram, sizeof(tic_ram));
+    memset(&machine->state.ovr, 0, sizeof machine->state.ovr);
 
-    machine->pause.time.start = machine->data->start;
-    machine->pause.time.paused = machine->data->counter();
+    if (machine->data)
+    {
+        machine->pause.time.start = machine->data->start;
+        machine->pause.time.paused = machine->data->counter();
+    }
 }
 
 void tic_core_resume(tic_mem* memory)
@@ -785,7 +772,13 @@ void tic_api_cls(tic_mem* memory, u8 color)
 s32 tic_api_font(tic_mem* memory, const char* text, s32 x, s32 y, u8 chromakey, s32 w, s32 h, bool fixed, s32 scale, bool alt)
 {
     u8* mapping = getPalette(memory, &chromakey, 1);
-    tic_tilesheet font_face = getTileSheetFromSegment(memory, memory->ram.vram.blit.segment ^ 1);
+
+    // Compatibility : flip top and bottom of the spritesheet
+    // to preserve tic_api_font's default target
+    u8 segment = memory->ram.vram.blit.segment >> 1;
+    u8 flipmask = 1; while (segment >>= 1) flipmask<<=1;
+
+    tic_tilesheet font_face = getTileSheetFromSegment(memory, memory->ram.vram.blit.segment ^ flipmask);
     return drawText((tic_machine*)memory, &font_face, text, x, y, w, h, fixed, mapping, scale, alt);
 }
 
@@ -793,7 +786,10 @@ s32 tic_api_print(tic_mem* memory, const char* text, s32 x, s32 y, u8 color, boo
 {
     u8 mapping[] = {255, color};
     tic_tilesheet font_face = getTileSheetFromSegment(memory, 1);
-    return drawText((tic_machine*)memory, &font_face, text, x, y, alt ? TIC_ALTFONT_WIDTH : TIC_FONT_WIDTH, TIC_FONT_HEIGHT+1, fixed, mapping, scale, alt);
+    // Compatibility : print uses reduced width for non-fixed space
+    u8 width = alt ? TIC_ALTFONT_WIDTH : TIC_FONT_WIDTH;
+    if (!fixed) width -= 2;
+    return drawText((tic_machine*)memory, &font_face, text, x, y, width, TIC_FONT_HEIGHT, fixed, mapping, scale, alt);
 }
 
 void tic_api_spr(tic_mem* memory, s32 index, s32 x, s32 y, s32 w, s32 h, u8* colors, s32 count, s32 scale, tic_flip flip, tic_rotate rotate)
@@ -1524,9 +1520,10 @@ static void stereo_tick_end(tic_mem* memory, tic_sound_register_data* registers,
 void tic_core_tick_end(tic_mem* memory)
 {
     tic_machine* machine = (tic_machine*)memory;
+    tic80_input* input = &machine->memory.ram.input;
 
-    machine->state.gamepads.previous.data = machine->memory.ram.input.gamepads.data;
-    machine->state.keyboard.previous.data = machine->memory.ram.input.keyboard.data;
+    machine->state.gamepads.previous.data = input->gamepads.data;
+    machine->state.keyboard.previous.data = input->keyboard.data;
 
     stereo_tick_end(memory, machine->state.registers.left, machine->blip.left, 0);
     stereo_tick_end(memory, machine->state.registers.right, machine->blip.right, 1);
@@ -1562,7 +1559,7 @@ static void initCover(tic_mem* tic)
                 for (s32 i = 0; i < Size; i++)
                 {
                     const gif_color* c = &image->palette[image->buffer[i]];
-                    u8 color = tic_tool_find_closest_color(tic->cart.bank0.palette.colors, c);
+                    u8 color = tic_tool_find_closest_color(tic->cart.bank0.palette.scn.colors, c);
                     tic_tool_poke4(tic->ram.vram.screen.data, i, color);
                 }
             }
@@ -1578,13 +1575,13 @@ void tic_api_sync(tic_mem* tic, u32 mask, s32 bank, bool toCart)
 
     static const struct {s32 bank; s32 ram; s32 size;} Sections[] = 
     {
-        {offsetof(tic_bank, tiles),     offsetof(tic_ram, tiles),           sizeof(tic_tiles)   },
-        {offsetof(tic_bank, sprites),   offsetof(tic_ram, sprites),         sizeof(tic_tiles)   },
-        {offsetof(tic_bank, map),       offsetof(tic_ram, map),             sizeof(tic_map)     },
-        {offsetof(tic_bank, sfx),       offsetof(tic_ram, sfx),             sizeof(tic_sfx)     },
-        {offsetof(tic_bank, music),     offsetof(tic_ram, music),           sizeof(tic_music)   },
-        {offsetof(tic_bank, palette),   offsetof(tic_ram, vram.palette),    sizeof(tic_palette) },
-        {offsetof(tic_bank, flags),     offsetof(tic_ram, flags),           sizeof(tic_flags)   },
+        {offsetof(tic_bank, tiles),         offsetof(tic_ram, tiles),           sizeof(tic_tiles)   },
+        {offsetof(tic_bank, sprites),       offsetof(tic_ram, sprites),         sizeof(tic_tiles)   },
+        {offsetof(tic_bank, map),           offsetof(tic_ram, map),             sizeof(tic_map)     },
+        {offsetof(tic_bank, sfx),           offsetof(tic_ram, sfx),             sizeof(tic_sfx)     },
+        {offsetof(tic_bank, music),         offsetof(tic_ram, music),           sizeof(tic_music)   },
+        {offsetof(tic_bank, palette.scn),   offsetof(tic_ram, vram.palette),    sizeof(tic_palette) },
+        {offsetof(tic_bank, flags),         offsetof(tic_ram, flags),           sizeof(tic_flags)   },
     };
 
     enum{Count = COUNT_OF(Sections), Mask = (1 << Count) - 1};
@@ -1603,14 +1600,26 @@ void tic_api_sync(tic_mem* tic, u32 mask, s32 bank, bool toCart)
                 : memcpy((u8*)&tic->ram + Sections[i].ram, (u8*)&tic->cart.banks[bank] + Sections[i].bank, Sections[i].size);
     }
 
+    // copy OVR palette
+    {
+        enum {PaletteIndex = 5};
+
+        if(mask & (1 << PaletteIndex))
+            toCart
+                ? memcpy(&tic->cart.banks[bank].palette.ovr, &machine->state.ovr.palette, sizeof(tic_palette))
+                : memcpy(&machine->state.ovr.palette, &tic->cart.banks[bank].palette.ovr, sizeof(tic_palette));
+    }
+
     machine->state.synced |= mask;
 }
 
 static void cart2ram(tic_mem* memory)
 {
-    static const u8 Font[] = {
-        #include "system/font.inl"
+    static const u8 Font[] = 
+    {
+        #include "font.inl"
     };
+
     memcpy(memory->ram.font.data, Font, sizeof Font);
 
     tic_api_sync(memory, 0, 0, false);
@@ -1778,6 +1787,17 @@ void tic_core_tick(tic_mem* tic, tic_tick_data* data)
         else return;
     }
 
+    {
+        if(!tic->input.keyboard)
+            ZEROMEM(tic->ram.input.keyboard);
+
+        if(!tic->input.gamepad)
+            ZEROMEM(tic->ram.input.gamepads);
+
+        if(!tic->input.mouse)
+            ZEROMEM(tic->ram.input.mouse);
+    }
+
     machine->state.tick(tic);
 }
 
@@ -1878,162 +1898,6 @@ bool tic_api_keyp(tic_mem* tic, tic_key key, s32 hold, s32 period)
     return false;
 }
 
-void tic_core_load(tic_cartridge* cart, const u8* buffer, s32 size)
-{
-    const u8* end = buffer + size;
-    memset(cart, 0, sizeof(tic_cartridge));
-
-    #define LOAD_CHUNK(to) memcpy(&to, buffer, MIN(sizeof(to), chunk.size))
-
-    bool paletteExists = false;
-
-    tic_code* code = calloc(TIC_BANKS, TIC_CODE_SIZE);
-
-    if(!code) return;
-
-    while(buffer < end)
-    {
-        Chunk chunk;
-        memcpy(&chunk, buffer, sizeof(Chunk));
-        buffer += sizeof(Chunk);
-
-        switch(chunk.type)
-        {
-        case CHUNK_TILES:       LOAD_CHUNK(cart->banks[chunk.bank].tiles);          break;
-        case CHUNK_SPRITES:     LOAD_CHUNK(cart->banks[chunk.bank].sprites);        break;
-        case CHUNK_MAP:         LOAD_CHUNK(cart->banks[chunk.bank].map);            break;
-        case CHUNK_SAMPLES:     LOAD_CHUNK(cart->banks[chunk.bank].sfx.samples);    break;
-        case CHUNK_WAVEFORM:    LOAD_CHUNK(cart->banks[chunk.bank].sfx.waveforms);  break;
-        case CHUNK_MUSIC:       LOAD_CHUNK(cart->banks[chunk.bank].music.tracks);   break;
-        case CHUNK_PATTERNS:    LOAD_CHUNK(cart->banks[chunk.bank].music.patterns); break;
-        case CHUNK_PALETTE:     LOAD_CHUNK(cart->banks[chunk.bank].palette);        break;
-        case CHUNK_FLAGS:       LOAD_CHUNK(cart->banks[chunk.bank].flags);          break;
-        case CHUNK_CODE:        LOAD_CHUNK(code[chunk.bank].data);                  break;
-        case CHUNK_COVER:
-            LOAD_CHUNK(cart->cover.data);
-            cart->cover.size = chunk.size;
-            break;
-        case CHUNK_PATTERNS_DEP: 
-            {
-                // workaround to load deprecated music patterns section
-                // and automatically convert volume value to a command
-                tic_patterns* ptrns = &cart->banks[chunk.bank].music.patterns;
-                LOAD_CHUNK(*ptrns);
-                for(s32 i = 0; i < MUSIC_PATTERNS; i++)
-                    for(s32 r = 0; r < MUSIC_PATTERN_ROWS; r++)
-                    {
-                        tic_track_row* row = &ptrns->data[i].rows[r];
-                        if(row->note >= NoteStart && row->command == tic_music_cmd_empty)
-                        {
-                            row->command = tic_music_cmd_volume;
-                            row->param2 = row->param1 = MAX_VOLUME - row->param1;
-                        }
-                    }
-            }
-            break;
-        default: break;
-        }
-
-        buffer += chunk.size;
-
-        if(chunk.bank == 0 && chunk.type == CHUNK_PALETTE)
-            paletteExists = true;
-    }
-
-    #undef LOAD_CHUNK
-
-    // workaround to load code from banks
-    if(!strlen(cart->code.data))
-        for(s32 i = TIC_BANKS-1; i >= 0; i--)
-        {
-            // add new line to split code banks
-            {
-                s32 len = strlen(code[i].data);
-                if(len && len < TIC_CODE_SIZE && code[i].data[len - 1] != '\n')
-                    strcat(code[i].data, "\n");
-            }
-
-            if(strlen(code[i].data) + strlen(cart->code.data) < TIC_CODE_SIZE)
-                strcat(cart->code.data, code[i].data);
-            else break;
-        }
-
-    free(code);
-
-    // workaround to support ancient carts without palette
-    // load DB16 palette if it not exists
-    if(!paletteExists)
-    {
-        static const u8 DB16[] = {0x14, 0x0c, 0x1c, 0x44, 0x24, 0x34, 0x30, 0x34, 0x6d, 0x4e, 0x4a, 0x4e, 0x85, 0x4c, 0x30, 0x34, 0x65, 0x24, 0xd0, 0x46, 0x48, 0x75, 0x71, 0x61, 0x59, 0x7d, 0xce, 0xd2, 0x7d, 0x2c, 0x85, 0x95, 0xa1, 0x6d, 0xaa, 0x2c, 0xd2, 0xaa, 0x99, 0x6d, 0xc2, 0xca, 0xda, 0xd4, 0x5e, 0xde, 0xee, 0xd6};
-        memcpy(cart->bank0.palette.data, DB16, sizeof(tic_palette));
-    }
-}
-
-
-static s32 calcBufferSize(const void* buffer, s32 size)
-{
-    const u8* ptr = (u8*)buffer + size - 1;
-    const u8* end = (u8*)buffer;
-
-    while(ptr >= end)
-    {
-        if(*ptr) break;
-
-        ptr--;
-        size--;
-    }
-
-    return size;
-}
-
-static u8* saveFixedChunk(u8* buffer, ChunkType type, const void* from, s32 size, s32 bank)
-{
-    if(size)
-    {
-        Chunk chunk = {.type = type, .bank = bank, .size = size, .temp = 0};
-        memcpy(buffer, &chunk, sizeof(Chunk));
-        buffer += sizeof(Chunk);
-        memcpy(buffer, from, size);
-        buffer += size;
-    }
-
-    return buffer;
-}
-
-static u8* saveChunk(u8* buffer, ChunkType type, const void* from, s32 size, s32 bank)
-{
-    s32 chunkSize = calcBufferSize(from, size);
-
-    return saveFixedChunk(buffer, type, from, chunkSize, bank);
-}
-
-s32 tic_core_save(const tic_cartridge* cart, u8* buffer)
-{
-    u8* start = buffer;
-
-    #define SAVE_CHUNK(ID, FROM, BANK) saveChunk(buffer, ID, &FROM, sizeof(FROM), BANK)
-
-    for(s32 i = 0; i < TIC_BANKS; i++)
-    {
-        buffer = SAVE_CHUNK(CHUNK_TILES,    cart->banks[i].tiles,           i);
-        buffer = SAVE_CHUNK(CHUNK_SPRITES,  cart->banks[i].sprites,         i);
-        buffer = SAVE_CHUNK(CHUNK_MAP,      cart->banks[i].map,             i);
-        buffer = SAVE_CHUNK(CHUNK_SAMPLES,  cart->banks[i].sfx.samples,     i);
-        buffer = SAVE_CHUNK(CHUNK_WAVEFORM, cart->banks[i].sfx.waveforms,   i);
-        buffer = SAVE_CHUNK(CHUNK_PATTERNS, cart->banks[i].music.patterns,  i);
-        buffer = SAVE_CHUNK(CHUNK_MUSIC,    cart->banks[i].music.tracks,    i);
-        buffer = SAVE_CHUNK(CHUNK_PALETTE,  cart->banks[i].palette,         i);
-        buffer = SAVE_CHUNK(CHUNK_FLAGS,    cart->banks[i].flags,           i);
-    }
-
-    buffer = SAVE_CHUNK(CHUNK_CODE, cart->code, 0);   
-    buffer = saveFixedChunk(buffer, CHUNK_COVER, cart->cover.data, cart->cover.size, 0);
-
-    #undef SAVE_CHUNK
-
-    return (s32)(buffer - start);
-}
-
 // copied from SDL2
 static inline void memset4(void *dst, u32 val, u32 dwords)
 {
@@ -2063,20 +1927,25 @@ static inline void memset4(void *dst, u32 val, u32 dwords)
 #endif
 }
 
-void tic_core_blit_ex(tic_mem* tic, tic_scanline scanline, tic_overline overline, void* data)
+void tic_core_blit_ex(tic_mem* tic, tic80_pixel_color_format fmt, tic_scanline scanline, tic_overline overline, void* data)
 {
-    const u32* pal = tic_tool_palette_blit(&tic->ram.vram.palette);
-
+    // init OVR palette
     {
         tic_machine* machine = (tic_machine*)tic;
-        memcpy(machine->state.ovr.palette, pal, sizeof machine->state.ovr.palette);
+
+        const tic_palette* ovr = &machine->state.ovr.palette;
+        bool ovrEmpty = true;
+        for(s32 i = 0; i < sizeof(tic_palette); i++)
+            if(ovr->data[i])
+                ovrEmpty = false;
+
+        memcpy(machine->state.ovr.raw, tic_tool_palette_blit(ovrEmpty ? &tic->ram.vram.palette : ovr, fmt), sizeof machine->state.ovr.raw);
     }
 
     if(scanline)
-    {
         scanline(tic, 0, data);
-        pal = tic_tool_palette_blit(&tic->ram.vram.palette);
-    }
+
+    const u32* pal = tic_tool_palette_blit(&tic->ram.vram.palette, fmt);
 
     enum {Top = (TIC80_FULLHEIGHT-TIC80_HEIGHT)/2, Bottom = Top};
     enum {Left = (TIC80_FULLWIDTH-TIC80_WIDTH)/2, Right = Left};
@@ -2106,7 +1975,7 @@ void tic_core_blit_ex(tic_mem* tic, tic_scanline scanline, tic_overline overline
         if(scanline && (r < TIC80_HEIGHT-1))
         {
             scanline(tic, r+1, data);
-            pal = tic_tool_palette_blit(&tic->ram.vram.palette);
+            pal = tic_tool_palette_blit(&tic->ram.vram.palette, fmt);
         }
     }
 
@@ -2133,9 +2002,9 @@ static inline void overline(tic_mem* memory, void* data)
         machine->state.ovr.callback(memory, data);
 }
 
-void tic_core_blit(tic_mem* tic)
+void tic_core_blit(tic_mem* tic, tic80_pixel_color_format fmt)
 {
-    tic_core_blit_ex(tic, scanline, overline, NULL);
+    tic_core_blit_ex(tic, fmt, scanline, overline, NULL);
 }
 
 u8 tic_api_peek(tic_mem* memory, s32 address)
@@ -2231,7 +2100,14 @@ tic_mem* tic_core_create(s32 samplerate)
         return NULL;
     }
 
+    machine->memory.screen_format = TIC80_PIXEL_COLOR_RGBA8888;
     machine->samplerate = samplerate;
+#ifdef _3DS
+    // To feed texture data directly to the 3DS GPU, linearly allocated memory is required, which is
+    // not guaranteed by malloc.
+    // Additionally, allocate TIC80_FULLHEIGHT + 1 lines to minimize glitches in linear scaling mode.
+    machine->memory.screen = linearAlloc(TIC80_FULLWIDTH * (TIC80_FULLHEIGHT + 1) * sizeof(u32));
+#endif
     machine->memory.samples.size = samplerate * TIC_STEREO_CHANNELS / TIC80_FRAMERATE * sizeof(s16);
     machine->memory.samples.buffer = malloc(machine->memory.samples.size);
 

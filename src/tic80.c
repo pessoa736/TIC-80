@@ -26,6 +26,7 @@
 #include <tic80.h>
 #include "ticapi.h"
 #include "tools.h"
+#include "cart.h"
 
 #include "ext/gif.h"
 
@@ -74,6 +75,7 @@ tic80* tic80_create(s32 samplerate)
         memset(tic80, 0, sizeof(tic80_local));
 
         tic80->memory = tic_core_create(samplerate);
+        tic80->tic.screen_format = tic80->memory->screen_format;
 
         return &tic80->tic;
     }
@@ -103,7 +105,7 @@ TIC80_API void tic80_load(tic80* tic, void* cart, s32 size)
     }
 
     {
-        tic_core_load(&tic80->memory->cart, cart, size);
+        tic_cart_load(&tic80->memory->cart, cart, size);
         tic_api_reset(tic80->memory);
     }
 }
@@ -112,13 +114,14 @@ TIC80_API void tic80_tick(tic80* tic, const tic80_input* input)
 {
     tic80_local* tic80 = (tic80_local*)tic;
 
+    tic80->memory->screen_format = tic80->tic.screen_format;
     tic80->memory->ram.input = *input;
     
     tic_core_tick_start(tic80->memory);
     tic_core_tick(tic80->memory, &tic80->tickData);
     tic_core_tick_end(tic80->memory);
 
-    tic_core_blit(tic80->memory);
+    tic_core_blit(tic80->memory, tic80->memory->screen_format);
 
     TickCounter++;
 }
