@@ -1719,6 +1719,24 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
 
     enum {Width = 164, Height = 106, Header = 10, Rows = TRACKER_ROWS, NoteWidth = 4, NoteHeight = TIC_FONT_HEIGHT};
     
+    s32 scroll = 0;
+    const tic_sound_state* pos = getMusicPos(music);
+
+    if(pos->music.track == music->track && pos->music.row >= 0)
+    {
+        scroll = pos->music.row;
+    }
+
+    {
+        tic_rect rect = {x, y, Width, Height};
+
+        if(checkMousePos(&rect))
+        {
+            // setCursor(tic_cursor_hand);
+        }
+    }
+
+
     drawEditPanel(music, x, y, Width, Height);
 
     // draw header
@@ -1740,13 +1758,6 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
         tic_api_print(tic, "Y", x + 159, y + 2, tic_color_14, true, 1, true);
     }
 
-    s32 scroll = 0;
-    const tic_sound_state* pos = getMusicPos(music);
-    if(pos->music.track == music->track && pos->music.row >= 0)
-    {
-        scroll = pos->music.row;
-    }
-
     for(s32 r = 0; r < Rows; r++)
     {
         s32 row = (r + scroll) % getRows(music);
@@ -1763,7 +1774,28 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
         // draw piano roll
         for(s32 n = 0; n < NOTES; n++)
         {
-            tic_api_rect(tic, x + 14 + n * NoteWidth, y + Header + r * NoteHeight, NoteWidth - 1, NoteHeight - 1, tic_color_15);
+            tic_rect rect = {x + 14 + n * NoteWidth, y + Header + r * NoteHeight, NoteWidth - 1, NoteHeight - 1};
+
+            bool over = false;
+            if(checkMousePos(&rect))
+            {
+                setCursor(tic_cursor_hand);
+                over = true;
+
+                if(checkMouseClick(&rect, tic_mouse_left))
+                {
+                    s32 channel = 0;
+                    tic_track_pattern* pattern = getFramePattern(music, channel, pos->music.frame);
+                    tic_track_row* row = &pattern->rows[(r + scroll) % getRows(music)];
+
+                    row->note = NoteStart + n;
+
+                    // !TODO: remove this
+                    row->octave = 3;
+                }
+            }
+
+            tic_api_rect(tic, rect.x, rect.y, rect.w, rect.h, over ? tic_color_14 : tic_color_15);
         }
 
         if(beat)
@@ -1807,7 +1839,6 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
         // draw XY
         tic_api_print(tic, "--", x + 152, y + Header + r * NoteHeight, beat ? tic_color_13 : tic_color_14, true, 1, false);
     }
-
 
     s32 channel = 0;
     const tic_track_pattern* pattern = getFramePattern(music, channel, pos->music.frame);
