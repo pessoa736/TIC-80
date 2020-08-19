@@ -66,7 +66,13 @@ struct Music
     struct
     {
         s32 channel; // edit channel
-        s32 editCol;
+
+        struct
+        {
+            s8 patternCol;
+            s8 sfxCol;
+            s8 sfxRow;
+        } edit;
     } piano;
 
     enum
