@@ -1671,25 +1671,48 @@ static void drawPianoFrames(Music* music, s32 x, s32 y)
             {
                 setCursor(tic_cursor_hand);
 
-                if(checkMouseDown(&rect, tic_mouse_left))
+                if(checkMouseClick(&rect, tic_mouse_left))
                 {
-                    music->piano.channel = c;
-                    music->tracker.frame = i;
+                    if(c == music->piano.channel && i == music->tracker.frame)
+                    {
+                        s32 col = (getMouseX() - rect.x) / (TIC_FONT_WIDTH+1);
+                        music->piano.editCol = music->piano.editCol == col ? -1 : col;
+                    }
+                    else
+                    {
+                        music->piano.channel = c;
+                        music->tracker.frame = i;
+                        music->piano.editCol = -1;                      
+                    }
                 }
             }
 
+            tic_point pos = {x + 1 + c * ColWidth, y + Header + i * TIC_FONT_HEIGHT};
+
             if(c == music->piano.channel && i == music->tracker.frame)
             {
-                tic_api_rect(tic, rect.x, rect.y, rect.w, rect.h, tic_color_12);
+                if(music->piano.editCol >= 0)
+                {
+                    const char* val = pattern ? index : "00";
+                    tic_api_print(tic, val, pos.x, pos.y + 1, tic_color_0, true, 1, false);
+                    tic_api_print(tic, val, pos.x, pos.y, tic_color_12, true, 1, false);
 
-                tic_api_print(tic, index, x + 1 + c * ColWidth, y + Header + i * TIC_FONT_HEIGHT, 
-                    tic_color_0, true, 1, false);
+                    bool blink = music->tickCounter % TIC80_FRAMERATE < TIC80_FRAMERATE / 2;
+                    if(blink)
+                    {
+                        tic_api_rect(tic, rect.x + music->piano.editCol * TIC_FONT_WIDTH, rect.y, TIC_FONT_WIDTH+1, rect.h, tic_color_2);
+                        tic_api_print(tic, (const char[]){val[music->piano.editCol], '\0'}, 
+                            pos.x + music->piano.editCol * TIC_FONT_WIDTH, pos.y, tic_color_0, true, 1, false);
+                    }
+                }
+                else
+                {
+                    tic_api_print(tic, index, pos.x, pos.y + 1, tic_color_0, true, 1, false);
+                    tic_api_print(tic, index, pos.x, pos.y, tic_color_12, true, 1, false);
+                }
             }
             else
-            {
-                tic_api_print(tic, index, x + 1 + c * ColWidth, y + Header + i * TIC_FONT_HEIGHT, 
-                    c & 1 ? tic_color_15 : tic_color_14, true, 1, false);
-            }
+                tic_api_print(tic, index, pos.x, pos.y, c & 1 ? tic_color_15 : tic_color_14, true, 1, false);
         }
 
         // !TODO: move to drawPianoStatus
@@ -2081,7 +2104,7 @@ static void tick(Music* music)
             }
         }
     }
-    
+
     for (s32 i = 0; i < TIC_SOUND_CHANNELS; i++)
         if(!music->tracker.on[i])
             tic->ram.registers[i].volume = 0;
@@ -2153,6 +2176,7 @@ void initMusic(Music* music, tic_mem* tic, tic_music* src)
         .piano =
         {
             .channel = 0,
+            .editCol = -1,
         },
 
         .tickCounter = 0,
