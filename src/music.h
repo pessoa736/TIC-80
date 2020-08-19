@@ -63,6 +63,11 @@ struct Music
 
     } tracker;
 
+    struct
+    {
+        s32 channel; // edit channel
+    } piano;
+
     enum
     {
         MUSIC_TRACKER_TAB,
