@@ -1982,8 +1982,91 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
 
 }
 
+static void processPianoKeyboard(Music* music)
+{
+    tic_mem* tic = music->tic;
+
+    bool ctrl = tic_api_key(tic, tic_key_ctrl);
+
+    if (ctrl)
+    {
+        if(keyWasPressed(tic_key_z))       undo(music);
+        else if(keyWasPressed(tic_key_y))  redo(music);
+        else if(keyWasPressed(tic_key_f))  toggleFollowMode(music);
+    }
+
+    if(music->piano.editCol >= 0)
+    {
+        if(keyWasPressed(tic_key_return)) music->piano.editCol = -1;
+        else if(keyWasPressed(tic_key_up)) music->tracker.frame--;
+        else if(keyWasPressed(tic_key_down)) music->tracker.frame++;
+        else if(keyWasPressed(tic_key_left))
+        {
+            if(music->piano.editCol > 0)
+                music->piano.editCol--;
+            else
+            {
+                music->piano.editCol = 1;
+                music->piano.channel--;
+            }
+        }
+        else if(keyWasPressed(tic_key_right))
+        {
+            if(music->piano.editCol == 0)
+                music->piano.editCol++;
+            else
+            {
+                music->piano.editCol = 0;
+                music->piano.channel++;
+            }
+        }
+        else
+        {
+            // !TODO: remove copy paste
+            s32 val = -1;
+            char sym = getKeyboardText();
+            if(sym >= '0' && sym <= '9') val = sym - '0';
+
+            if(val >= 0)
+            {
+                enum {Base = 10};
+                s32 patternId = tic_tool_get_pattern_id(getTrack(music), music->tracker.frame, music->piano.channel);
+
+                patternId = music->piano.editCol == 0
+                    ? val * Base + patternId % Base
+                    : patternId / Base * Base + val % Base;
+
+                if(patternId <= MUSIC_PATTERNS)
+                {
+                    setChannelPatternValue(music, patternId, music->piano.channel);
+
+                    if(music->piano.editCol == 0)
+                        music->piano.editCol++;
+                }
+            }            
+        }
+    }
+    else
+    {
+        if(keyWasPressed(tic_key_return)) music->piano.editCol = 0;
+        else if(keyWasPressed(tic_key_up)) music->tracker.frame--;
+        else if(keyWasPressed(tic_key_down)) music->tracker.frame++;
+        else if(keyWasPressed(tic_key_left)) music->piano.channel--;
+        else if(keyWasPressed(tic_key_right)) music->piano.channel++;
+        else if(keyWasPressed(tic_key_delete)) setChannelPatternValue(music, 0, music->piano.channel);
+    }
+
+    if(music->tracker.frame < 0) music->tracker.frame = MUSIC_FRAMES - 1;
+    else if(music->tracker.frame >= MUSIC_FRAMES) music->tracker.frame = 0;
+
+    if(music->piano.channel < 0) music->piano.channel = TIC_SOUND_CHANNELS - 1;
+    else if(music->piano.channel >= TIC_SOUND_CHANNELS) music->piano.channel = 0;
+}
+
 static void drawPianoLayout(Music* music)
 {
+    processPianoKeyboard(music);
+
     drawPianoFrames(music, 3, 20);
     drawPianoPattern(music, 73, 20);
 }
