@@ -65,13 +65,19 @@ struct Music
 
     struct
     {
-        s32 channel; // edit channel
+        struct
+        {
+            s32 col;
+
+            // !TODO: use row as music->frame
+            // use tic_point here
+            s32 row;
+        } select;
 
         struct
         {
-            s8 patternCol;
-            s8 sfxCol;
-            s8 sfxRow;
+            s32 col;
+            s32 row;
         } edit;
     } piano;
 

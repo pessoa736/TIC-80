@@ -33,6 +33,18 @@
 static const char MusicCommands[] = MUSIC_CMD_LIST(CMD_STRING);
 #undef CMD_STRING
 
+enum PianoEditColumns
+{
+    PianoChannel1Column = 0,
+    PianoChannel2Column,
+    PianoChannel3Column,
+    PianoChannel4Column,
+    PianoSfxColumn,
+    PianoXYColumn,
+
+    PianoColumnsCount
+};
+
 enum
 {
     ColumnNote = 0,
@@ -44,24 +56,6 @@ enum
     ColumnParameter1,
     ColumnParameter2,
 };
-
-static void cleanPianoEdit(Music* music)
-{
-    memset(&music->piano.edit, -1, sizeof music->piano.edit);
-}
-
-static void editPianoPattern(Music* music, s8 col)
-{
-    cleanPianoEdit(music);
-    music->piano.edit.patternCol = col;
-}
-
-static void editPianoSfx(Music* music, s8 col, s8 row)
-{
-    cleanPianoEdit(music);
-    music->piano.edit.sfxCol = col;
-    music->piano.edit.sfxRow = row;
-}
 
 static void undo(Music* music)
 {
@@ -293,13 +287,7 @@ static s32 getRows(Music* music)
 
 static void updateScroll(Music* music)
 {
-    s32 rows = getRows(music);
-
-    if (music->tracker.scroll < 0)
-        music->tracker.scroll = 0;
-
-    if (music->tracker.scroll > rows - TRACKER_ROWS)
-        music->tracker.scroll = rows - TRACKER_ROWS;
+    music->tracker.scroll = CLAMP(music->tracker.scroll, 0, getRows(music) - TRACKER_ROWS);
 }
 
 static void updateTracker(Music* music)
@@ -1622,6 +1610,16 @@ static void drawMusicToolbar(Music* music)
     drawModeTabs(music);
 }
 
+static void drawPianoCursor(Music* music, s32 x, s32 y, const char* val)
+{
+    tic_mem* tic = music->tic;
+
+    s32 subCol = music->piano.edit.col % 2;
+    tic_point pos = {x + subCol * TIC_FONT_WIDTH, y};
+    tic_api_rect(tic, pos.x - 1, pos.y - 1, TIC_FONT_WIDTH + 1, TIC_FONT_HEIGHT + 1, tic_color_2);
+    tic_api_print(tic, (char[]){val[subCol], '\0'}, pos.x, pos.y, tic_color_0, true, 1, false);
+}
+
 static void drawPianoFrames(Music* music, s32 x, s32 y)
 {
     tic_mem* tic = music->tic;
@@ -1631,7 +1629,6 @@ static void drawPianoFrames(Music* music, s32 x, s32 y)
     drawEditPanel(music, x, y, Width, Height);
 
     tic_api_print(tic, "FRM", x + 1, y + 2, tic_color_14, true, 1, true);
-
 
     {
         const tic_sound_state* pos = getMusicPos(music);
@@ -1665,6 +1662,25 @@ static void drawPianoFrames(Music* music, s32 x, s32 y)
 
     x += ColWidth + 1;
 
+    {
+        tic_rect rect = {x, y + Header - 1, (TIC_FONT_WIDTH * 2 + 1) * TIC_SOUND_CHANNELS, MUSIC_FRAMES * TIC_FONT_HEIGHT + 1};
+        // tic_api_rect(tic, rect.x, rect.y, rect.w, rect.h, tic_color_2);
+
+        if(checkMousePos(&rect))
+        {
+            setCursor(tic_cursor_hand);
+
+            if(checkMouseClick(&rect, tic_mouse_left))
+            {
+                music->piano.edit.col = (getMouseX() - rect.x) * TIC_SOUND_CHANNELS * 2 / rect.w;
+                music->piano.edit.row = (getMouseY() - rect.y) * MUSIC_FRAMES / rect.h;
+
+                music->piano.select.col = music->piano.edit.col / 2;
+                music->piano.select.row = music->piano.edit.row;
+            }
+        }
+    }
+
     for(s32 c = 0; c < TIC_SOUND_CHANNELS; c++)
     {
         tic_api_rect(tic, x + c * ColWidth, y + 1, 
@@ -1683,54 +1699,39 @@ static void drawPianoFrames(Music* music, s32 x, s32 y)
             if(pattern)
                 sprintf(index, "%02i", pattern);
 
-            // !TODO: extract mouse handling from drawing
-            tic_rect rect = {x + c * ColWidth, y + Header + i * TIC_FONT_HEIGHT - 1, ColWidth, TIC_FONT_HEIGHT + 1};
-            if(checkMousePos(&rect))
-            {
-                setCursor(tic_cursor_hand);
-
-                if(checkMouseClick(&rect, tic_mouse_left))
-                {
-                    if(c == music->piano.channel && i == music->tracker.frame)
-                    {
-                        s32 col = (getMouseX() - rect.x) / (TIC_FONT_WIDTH+1);
-                        editPianoPattern(music, music->piano.edit.patternCol == col ? -1 : col);
-                    }
-                    else
-                    {
-                        music->piano.channel = c;
-                        music->tracker.frame = i;
-                        cleanPianoEdit(music);
-                    }
-                }
-            }
-
             tic_point pos = {x + 1 + c * ColWidth, y + Header + i * TIC_FONT_HEIGHT};
+            tic_api_print(tic, index, pos.x, pos.y, c & 1 ? tic_color_15 : tic_color_14, true, 1, false);
+        }
 
-            if(c == music->piano.channel && i == music->tracker.frame)
+        {
+            // !TODO: remove copypaste
+            char index[] = "--";
+
+            s32 pattern = tic_tool_get_pattern_id(getTrack(music), music->piano.select.row, music->piano.select.col);
+
+            if(pattern)
+                sprintf(index, "%02i", pattern);
+
+            tic_point pos = {x + 1 + music->piano.select.col * ColWidth, y + Header + music->piano.select.row * TIC_FONT_HEIGHT};
+            tic_api_print(tic, index, pos.x, pos.y + 1, tic_color_0, true, 1, false);
+            tic_api_print(tic, index, pos.x, pos.y, tic_color_12, true, 1, false);
+
+        }
+
+        // draw edit cursor
+        switch(music->piano.edit.col / 2)
+        {
+        case PianoChannel1Column:
+        case PianoChannel2Column:
+        case PianoChannel3Column:
+        case PianoChannel4Column:
             {
-                if(music->piano.edit.patternCol >= 0)
-                {
-                    const char* val = pattern ? index : "00";
-                    tic_api_print(tic, val, pos.x, pos.y + 1, tic_color_0, true, 1, false);
-                    tic_api_print(tic, val, pos.x, pos.y, tic_color_12, true, 1, false);
+                char label[] = "--";
+                s32 pattern = tic_tool_get_pattern_id(getTrack(music), music->piano.edit.row, music->piano.edit.col / 2);
+                if(pattern) sprintf(label, "%02i", pattern);
 
-                    bool blink = music->tickCounter % TIC80_FRAMERATE < TIC80_FRAMERATE / 2;
-                    if(blink)
-                    {
-                        tic_api_rect(tic, rect.x + music->piano.edit.patternCol * TIC_FONT_WIDTH, rect.y, TIC_FONT_WIDTH+1, rect.h, tic_color_2);
-                        tic_api_print(tic, (const char[]){val[music->piano.edit.patternCol], '\0'}, 
-                            pos.x + music->piano.edit.patternCol * TIC_FONT_WIDTH, pos.y, tic_color_0, true, 1, false);
-                    }
-                }
-                else
-                {
-                    tic_api_print(tic, index, pos.x, pos.y + 1, tic_color_0, true, 1, false);
-                    tic_api_print(tic, index, pos.x, pos.y, tic_color_12, true, 1, false);
-                }
+                drawPianoCursor(music, x + 1 + music->piano.edit.col / 2 * ColWidth, y + Header + music->piano.edit.row * TIC_FONT_HEIGHT, label);
             }
-            else
-                tic_api_print(tic, index, pos.x, pos.y, c & 1 ? tic_color_15 : tic_color_14, true, 1, false);
         }
 
         // !TODO: move to drawPianoStatus
@@ -1785,14 +1786,8 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
     enum {Width = 164, Height = 106, Header = 10, Rows = TRACKER_ROWS, NoteWidth = 4, NoteHeight = TIC_FONT_HEIGHT};
     
     s32 scroll = music->tracker.scroll;
-    // const tic_sound_state* pos = getMusicPos(music);
 
-    tic_track_pattern* pattern = getFramePattern(music, music->piano.channel, music->tracker.frame);//pos->music.frame);
-
-    // if(pos->music.track == music->track && pos->music.row >= 0)
-    // {
-    //     scroll = pos->music.row;
-    // }
+    tic_track_pattern* pattern = getFramePattern(music, music->piano.select.col, music->piano.select.row);
 
     drawEditPanel(music, x, y, Width, Height);
 
@@ -1976,33 +1971,10 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
                 {
                     tic_rect rect = {x + 96 - 1, y + Header + r * NoteHeight - 1, TIC_FONT_WIDTH*2+1, TIC_FONT_HEIGHT+1};
 
-                    if(checkMousePos(&rect))
-                    {
-                        setCursor(tic_cursor_hand);
-
-                        if(checkMouseClick(&rect, tic_mouse_left))
-                        {
-                            s32 col = (getMouseX() - rect.x) / (TIC_FONT_WIDTH+1);
-                            
-                            if(music->piano.edit.sfxRow == r)
-                                editPianoSfx(music, music->piano.edit.sfxCol == col ? -1 : col, r);
-                            else
-                                editPianoSfx(music, col, r);
-                        }
-                    }
-
-                    bool blink = music->tickCounter % TIC80_FRAMERATE < TIC80_FRAMERATE / 2;
-
-                    char sfx[] = "00";
+                    char sfx[] = "--";
                     sprintf(sfx, "%02i", tic_tool_get_track_row_sfx(row));
                     tic_api_print(tic, sfx, rect.x + 1, rect.y + 2, tic_color_0, true, 1, false);
                     tic_api_print(tic, sfx, rect.x + 1, rect.y + 1, tic_color_4, true, 1, false);
-
-                    if(music->piano.edit.sfxCol >= 0 && music->piano.edit.sfxRow == r && blink)
-                    {
-                        tic_api_rect(tic, rect.x + music->piano.edit.sfxCol * TIC_FONT_WIDTH, rect.y, TIC_FONT_WIDTH + 1, rect.h, tic_color_2);
-                        tic_api_print(tic, (const char[]){sfx[music->piano.edit.sfxCol], '\0'}, rect.x + music->piano.edit.sfxCol * TIC_FONT_WIDTH + 1, rect.y + 1, tic_color_0, true, 1, false);
-                    }
                 }
             }
 
@@ -2022,6 +1994,40 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
         }
     }
 
+    {
+        const tic_track_row* row = pattern ? &pattern->rows[(music->piano.edit.row + scroll) % getRows(music)] : NULL;
+
+        // draw edit cursor
+        switch(music->piano.edit.col / 2)
+        {
+        case PianoSfxColumn:
+            {
+                char sfx[] = "--";
+                if(row)
+                {
+                    // !TODO: remove copypaste
+                    if (row->note >= NoteStart || row->note == NoteStop)
+                        sprintf(sfx, "%02i", tic_tool_get_track_row_sfx(row));
+                }
+
+                drawPianoCursor(music, x + 96, y + Header + music->piano.edit.row * NoteHeight, sfx);
+            }
+            break;
+        case PianoXYColumn:
+            {
+                char xy[] = "--";
+                if(row)
+                {
+                    // !TODO: remove copypaste
+                    if(row->command > tic_music_cmd_empty)
+                        sprintf(xy, "%01X%01X", row->param1, row->param2);
+                }
+
+                drawPianoCursor(music, x + 152, y + Header + music->piano.edit.row * NoteHeight, xy);
+            }
+            break;
+        }
+    }
 }
 
 static void processPianoKeyboard(Music* music)
@@ -2037,113 +2043,24 @@ static void processPianoKeyboard(Music* music)
         else if(keyWasPressed(tic_key_f))  toggleFollowMode(music);
     }
 
-    if(music->piano.edit.patternCol >= 0)
+    if(keyWasPressed(tic_key_up)) music->piano.edit.row--;
+    else if(keyWasPressed(tic_key_down)) music->piano.edit.row++;
+    else if(keyWasPressed(tic_key_left)) music->piano.edit.col--;
+    else if(keyWasPressed(tic_key_right)) music->piano.edit.col++;
+
+    music->piano.edit.col = CLAMP(music->piano.edit.col, 0, PianoColumnsCount * 2 - 1);
+
+    switch(music->piano.edit.col / 2)
     {
-        if(keyWasPressed(tic_key_return)) music->piano.edit.patternCol = -1;
-        else if(keyWasPressed(tic_key_up)) music->tracker.frame--;
-        else if(keyWasPressed(tic_key_down)) music->tracker.frame++;
-        else if(keyWasPressed(tic_key_left))
-        {
-            if(music->piano.edit.patternCol > 0)
-                music->piano.edit.patternCol--;
-            else
-            {
-                music->piano.edit.patternCol = 1;
-                music->piano.channel--;
-            }
-        }
-        else if(keyWasPressed(tic_key_right))
-        {
-            if(music->piano.edit.patternCol == 0)
-                music->piano.edit.patternCol++;
-            else
-            {
-                music->piano.edit.patternCol = 0;
-                music->piano.channel++;
-            }
-        }
-        else
-        {
-            // !TODO: remove copy paste
-            s32 val = -1;
-            char sym = getKeyboardText();
-            if(sym >= '0' && sym <= '9') val = sym - '0';
-
-            if(val >= 0)
-            {
-                enum {Base = 10};
-                s32 patternId = tic_tool_get_pattern_id(getTrack(music), music->tracker.frame, music->piano.channel);
-
-                patternId = music->piano.edit.patternCol == 0
-                    ? val * Base + patternId % Base
-                    : patternId / Base * Base + val % Base;
-
-                if(patternId <= MUSIC_PATTERNS)
-                {
-                    setChannelPatternValue(music, patternId, music->piano.channel);
-
-                    if(music->piano.edit.patternCol == 0)
-                        music->piano.edit.patternCol++;
-                }
-            }
-        }
-    }
-    else if(music->piano.edit.sfxCol >= 0)
-    {
-        if(keyWasPressed(tic_key_return)) music->piano.edit.sfxCol = -1;
-        else if(keyWasPressed(tic_key_up)) music->piano.edit.sfxRow--;
-        else if(keyWasPressed(tic_key_down)) music->piano.edit.sfxRow++;
-        else if(keyWasPressed(tic_key_left))
-        {
-            if(music->piano.edit.sfxCol > 0)
-                music->piano.edit.sfxCol--;
-        }
-        else if(keyWasPressed(tic_key_right))
-        {
-            if(music->piano.edit.sfxCol == 0)
-                music->piano.edit.sfxCol++;
-        }
-        else
-        {
-            // !TODO: remove copy paste
-            s32 val = -1;
-            char sym = getKeyboardText();
-            if(sym >= '0' && sym <= '9') val = sym - '0';
-
-            if(val >= 0)
-            {
-                enum {Base = 10};
-                s32 sfx = getSfx(music);
-
-                sfx = music->piano.edit.sfxCol == 0
-                    ? val * Base + sfx % Base
-                    : sfx / Base * Base + val % Base;
-
-                if(sfx <= SFX_COUNT)
-                {
-                    setSfx(music, sfx);
-
-                    if(music->piano.edit.sfxCol == 0)
-                        music->piano.edit.sfxCol++;
-                }
-            }
-        }
-    }
-    else
-    {
-        if(keyWasPressed(tic_key_return)) music->piano.edit.patternCol = 0;
-        else if(keyWasPressed(tic_key_up)) music->tracker.frame--;
-        else if(keyWasPressed(tic_key_down)) music->tracker.frame++;
-        else if(keyWasPressed(tic_key_left)) music->piano.channel--;
-        else if(keyWasPressed(tic_key_right)) music->piano.channel++;
-        else if(keyWasPressed(tic_key_delete)) setChannelPatternValue(music, 0, music->piano.channel);
+    case PianoSfxColumn:
+    case PianoXYColumn:
+        if(music->piano.edit.row < 0) music->tracker.scroll--;
+        if(music->piano.edit.row > MUSIC_FRAMES-1) music->tracker.scroll++;
+        updateScroll(music);
+        break;
     }
 
-    if(music->tracker.frame < 0) music->tracker.frame = MUSIC_FRAMES - 1;
-    else if(music->tracker.frame >= MUSIC_FRAMES) music->tracker.frame = 0;
-
-    if(music->piano.channel < 0) music->piano.channel = TIC_SOUND_CHANNELS - 1;
-    else if(music->piano.channel >= TIC_SOUND_CHANNELS) music->piano.channel = 0;
+    music->piano.edit.row = CLAMP(music->piano.edit.row, 0, MUSIC_FRAMES-1);
 }
 
 static void drawPianoLayout(Music* music)
@@ -2341,13 +2258,14 @@ void initMusic(Music* music, tic_mem* tic, tic_music* src)
 
         .piano =
         {
-            .channel = 0,
+            .select =
+            {
+                .col = 0, .row = 0,
+            },
             .edit =
             {
-                .patternCol = -1,
-                .sfxCol = -1,
-                .sfxRow = -1,
-            },
+                .col = 0, .row = 0,
+            }
         },
 
         .tickCounter = 0,
