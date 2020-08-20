@@ -65,20 +65,8 @@ struct Music
 
     struct
     {
-        struct
-        {
-            s32 col;
-
-            // !TODO: use row as music->frame
-            // use tic_point here
-            s32 row;
-        } select;
-
-        struct
-        {
-            s32 col;
-            s32 row;
-        } edit;
+        tic_point select;
+        tic_point edit;
     } piano;
 
     enum
