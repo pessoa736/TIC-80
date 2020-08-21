@@ -720,10 +720,9 @@ static void copyFromClipboard(Music* music)
     }
 }
 
-static void setChannelPatternValue(Music* music, s32 patternId, s32 channel)
+static void setChannelPatternValue(Music* music, s32 patternId, s32 frame, s32 channel)
 {
     tic_track* track = getTrack(music);
-    s32 frame = music->tracker.frame;
 
     u32 patternData = 0;
     for(s32 b = 0; b < TRACK_PATTERNS_SIZE; b++)
@@ -800,6 +799,31 @@ static void updateSelection(Music* music)
 
     if(rect->x % CHANNEL_COLS + rect->w > CHANNEL_COLS)
         resetSelection(music);
+}
+
+static s32 setDigit(s32 pos, s32 val, s32 digit)
+{
+    enum {Base = 10};
+
+    s32 div = 1;
+    while(pos--) div *= Base;
+
+    return val - (val / div % Base - digit) * div;
+}
+
+static s32 sym2dec(char sym)
+{
+    s32 val = -1;
+    if (sym >= '0' && sym <= '9') val = sym - '0';
+    return val;
+}
+
+static s32 sym2hex(char sym)
+{
+    s32 val = sym2dec(sym);
+    if (sym >= 'a' && sym <= 'f') val = sym - 'a' + 10;
+
+    return val;
 }
 
 static void processTrackerKeyboard(Music* music)
@@ -968,20 +992,11 @@ static void processTrackerKeyboard(Music* music)
         case ColumnSfxLow:
             if(getNote(music) >= 0)
             {
-                s32 val = -1;
-
-                char sym = getKeyboardText();
+                s32 val = sym2dec(getKeyboardText());
                             
-                if (sym >= '0' && sym <= '9') val = sym - '0';
-
                 if(val >= 0)
                 {
-                    enum {Base = 10};
-                    s32 sfx = getSfx(music);
-
-                    sfx = col == 3 
-                        ? val * Base + sfx % Base
-                        : sfx / Base * Base + val % Base;
+                    s32 sfx = setDigit(col == 3 ? 1 : 0, getSfx(music), val);
 
                     setSfx(music, sfx);
 
@@ -1006,12 +1021,7 @@ static void processTrackerKeyboard(Music* music)
         case ColumnParameter1:
         case ColumnParameter2:
             {
-                s32 val = -1;
-
-                char sym = getKeyboardText();
-
-                if (sym >= '0' && sym <= '9') val = sym - '0';
-                if (sym >= 'a' && sym <= 'f') val = sym - 'a' + 10;
+                s32 val = sym2hex(getKeyboardText());
 
                 if(val >= 0)
                 {
@@ -1035,7 +1045,7 @@ static void processPatternKeyboard(Music* music)
     if(tic_api_key(tic, tic_key_ctrl) || tic_api_key(tic, tic_key_alt))
         return;
 
-    if(keyWasPressed(tic_key_delete))       setChannelPatternValue(music, 0, channel);
+    if(keyWasPressed(tic_key_delete))       setChannelPatternValue(music, 0, music->tracker.frame, channel);
     else if(keyWasPressed(tic_key_tab))     nextPattern(music);
     else if(keyWasPressed(tic_key_left))    patternColLeft(music);
     else if(keyWasPressed(tic_key_right))   patternColRight(music);
@@ -1044,24 +1054,16 @@ static void processPatternKeyboard(Music* music)
         music->tracker.row = music->tracker.scroll;
     else
     {
-        s32 val = -1;
-
-        char sym = getKeyboardText();
-
-        if(sym >= '0' && sym <= '9') val = sym - '0';
+        s32 val = sym2dec(getKeyboardText());
 
         if(val >= 0)
         {
-            enum {Base = 10};
-            s32 patternId = tic_tool_get_pattern_id(getTrack(music), music->tracker.frame, channel);
+            s32 pattern = setDigit(music->tracker.patternCol ? 0 : 1, tic_tool_get_pattern_id(getTrack(music), 
+                music->tracker.frame, channel), val);
 
-            patternId = music->tracker.patternCol == 0
-                ? val * Base + patternId % Base
-                : patternId / Base * Base + val % Base;
-
-            if(patternId <= MUSIC_PATTERNS)
+            if(pattern <= MUSIC_PATTERNS)
             {
-                setChannelPatternValue(music, patternId, channel);
+                setChannelPatternValue(music, pattern, music->tracker.frame, channel);
 
                 if(music->tracker.patternCol == 0)
                     patternColRight(music);                     
@@ -1273,7 +1275,7 @@ static void setChannelPattern(Music* music, s32 delta, s32 channel)
     s32 shift = channel * TRACK_PATTERN_BITS;
     s32 patternId = (patternData >> shift) & TRACK_PATTERN_MASK;
 
-    setChannelPatternValue(music, patternId + delta, channel);
+    setChannelPatternValue(music, patternId + delta, music->tracker.frame, channel);
 }
 
 static inline void drawChar(tic_mem* tic, char symbol, s32 x, s32 y, u8 color, bool alt)
@@ -1614,7 +1616,7 @@ static void drawPianoCursor(Music* music, s32 x, s32 y, const char* val)
 {
     tic_mem* tic = music->tic;
 
-    s32 subCol = music->piano.edit.x % 2;
+    s32 subCol = music->piano.edit.x & 1;
     tic_point pos = {x + subCol * TIC_FONT_WIDTH, y};
     tic_api_rect(tic, pos.x - 1, pos.y - 1, TIC_FONT_WIDTH + 1, TIC_FONT_HEIGHT + 1, tic_color_2);
     tic_api_print(tic, (char[]){val[subCol], '\0'}, pos.x, pos.y, tic_color_0, true, 1, false);
@@ -2084,6 +2086,35 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
     }
 }
 
+static void updatePianoEditPos(Music* music)
+{
+    music->piano.edit.x = CLAMP(music->piano.edit.x, 0, PianoColumnsCount * 2 - 1);
+
+    switch(music->piano.edit.x / 2)
+    {
+    case PianoSfxColumn:
+    case PianoXYColumn:
+        if(music->piano.edit.y < 0) music->tracker.scroll--;
+        if(music->piano.edit.y > MUSIC_FRAMES-1) music->tracker.scroll++;
+        updateScroll(music);
+        break;
+    }
+
+    music->piano.edit.y = CLAMP(music->piano.edit.y, 0, MUSIC_FRAMES-1);
+}
+
+static void updatePianoEditCol(Music* music)
+{
+    if(music->piano.edit.x & 1)
+    {
+        music->piano.edit.x--;
+        music->piano.edit.y++;
+    }
+    else music->piano.edit.x++;
+
+    updatePianoEditPos(music);
+}
+
 static void processPianoKeyboard(Music* music)
 {
     tic_mem* tic = music->tic;
@@ -2102,19 +2133,58 @@ static void processPianoKeyboard(Music* music)
     else if(keyWasPressed(tic_key_left)) music->piano.edit.x--;
     else if(keyWasPressed(tic_key_right)) music->piano.edit.x++;
 
-    music->piano.edit.x = CLAMP(music->piano.edit.x, 0, PianoColumnsCount * 2 - 1);
+    updatePianoEditPos(music);
 
-    switch(music->piano.edit.x / 2)
     {
-    case PianoSfxColumn:
-    case PianoXYColumn:
-        if(music->piano.edit.y < 0) music->tracker.scroll--;
-        if(music->piano.edit.y > MUSIC_FRAMES-1) music->tracker.scroll++;
-        updateScroll(music);
-        break;
-    }
+        s32 col = music->piano.edit.x / 2;
+        s32 dec = sym2dec(getKeyboardText());
+        s32 hex = sym2hex(getKeyboardText());
+        tic_track_pattern* pattern = getFramePattern(music, music->piano.select.x, music->piano.select.y);
+        tic_track_row* row = pattern ? &pattern->rows[music->piano.edit.y + music->tracker.scroll] : NULL;
 
-    music->piano.edit.y = CLAMP(music->piano.edit.y, 0, MUSIC_FRAMES-1);
+        switch(col)
+        {
+        case PianoChannel1Column:
+        case PianoChannel2Column:
+        case PianoChannel3Column:
+        case PianoChannel4Column:
+            if(dec >= 0)
+            {
+                s32 pattern = setDigit(music->piano.edit.x & 1 ? 0 : 1, 
+                    tic_tool_get_pattern_id(getTrack(music), music->piano.edit.y, col), dec);
+
+                if(pattern <= MUSIC_PATTERNS)
+                {
+                    setChannelPatternValue(music, pattern, music->piano.edit.y, col);
+                    updatePianoEditCol(music);
+                }
+            }
+            break;
+        case PianoSfxColumn:
+            if(row && row->note >= NoteStart && dec >= 0)
+            {
+                s32 sfx = setDigit(music->piano.edit.x & 1 ? 0 : 1, tic_tool_get_track_row_sfx(row), dec);
+                tic_tool_set_track_row_sfx(row, sfx);
+                history_add(music->history);
+
+                updatePianoEditCol(music);
+            }
+            break;
+
+        case PianoXYColumn:
+            if(row && row->command > tic_music_cmd_empty && hex >= 0)
+            {
+                if(music->piano.edit.x & 1)
+                    row->param2 = hex;
+                else row->param1 = hex;
+
+                history_add(music->history);
+
+                updatePianoEditCol(music);
+            }
+            break;                
+        }
+    }
 }
 
 static void drawPianoLayout(Music* music)
