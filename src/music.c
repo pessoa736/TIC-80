@@ -1849,6 +1849,8 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
                 tic_track_row* row = &pattern->rows[r + music->tracker.scroll];
 
                 row->command = command != row->command ? command : tic_music_cmd_empty;
+
+                history_add(music->history);
             }
         }
     }
@@ -1923,6 +1925,8 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
                                     row->note = NoteStop;
                                 else row->note = NoteStart + n;
                             }
+
+                            history_add(music->history);
                         }                    
                     }
                 }
@@ -1979,6 +1983,7 @@ static void drawPianoPattern(Music* music, s32 x, s32 y)
                         if(checkMouseClick(&rect, tic_mouse_left))
                         {
                             row->octave = n;
+                            history_add(music->history);
                         }
                     }
 
