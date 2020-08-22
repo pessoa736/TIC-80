@@ -2279,6 +2279,7 @@ static void drawBeatButton(Music* music, s32 x, s32 y)
     if(checkMousePos(&rect))
     {
         setCursor(tic_cursor_hand);
+        showTooltip(music->beat34 ? "set 4 quarter note" : "set 3 quarter note");
 
         if(checkMouseDown(&rect, tic_mouse_left))
             down = true;
