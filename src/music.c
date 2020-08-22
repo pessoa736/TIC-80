@@ -1284,6 +1284,11 @@ static inline void drawChar(tic_mem* tic, char symbol, s32 x, s32 y, u8 color, b
     tic_api_print(tic, (char[]){symbol, '\0'}, x, y, color, true, 1, alt);
 }
 
+static inline bool noteBeat(Music* music, s32 row)
+{
+    return row % (music->beat34 ? 3 : 4) == 0;
+}
+
 static void drawTrackerChannel(Music* music, s32 x, s32 y, s32 channel)
 {
     tic_mem* tic = music->tic;
@@ -1389,7 +1394,7 @@ static void drawTrackerChannel(Music* music, s32 x, s32 y, s32 channel)
             const u8 DarkColors[] = { tic_color_6, tic_color_3, tic_color_9 };
             static u8 ColorIndexes[] = { 0, 0, 0, 1, 1, 2, 2, 2 };
 
-            bool beetRow = i % NOTES_PER_BEAT == 0;
+            bool beetRow = noteBeat(music, i);
 
             for (s32 c = 0, colx = x; c < sizeof rowStr - 1; c++, colx += TIC_FONT_WIDTH)
             {
@@ -1412,7 +1417,7 @@ static void drawTrackerChannel(Music* music, s32 x, s32 y, s32 channel)
             }
         }
 
-        if (i % NOTES_PER_BEAT == 0)
+        if (noteBeat(music, i))
             tic_api_pix(music->tic, x - 4, y + pos*TIC_FONT_HEIGHT + 2, tic_color_0, false);
     }
 }
@@ -1787,12 +1792,6 @@ static void drawPianoRoll(Music* music, s32 x, s32 y)
             x + Buttons[i].offset, y, 1, 1, (u8[]){tic_color_0}, 1, 1, Buttons[i].flip, tic_no_rotate);
 }
 
-static inline bool noteBeat(s32 row)
-{
-    // !TODO: highlight every 4/4 or 3/4 note
-    return row % NOTES_PER_BEAT == 0;
-}
-
 static inline s32 rowIndex(Music* music, s32 row)
 {
     return row + music->tracker.scroll;
@@ -1813,7 +1812,7 @@ static void drawPianoRowColumn(Music* music, s32 x, s32 y)
 
         char label[] = "00";
         sprintf(label, "%02i", index);
-        tic_api_print(tic, label, x + 1, y + Header + r * TIC_FONT_HEIGHT, pattern && noteBeat(index) ? tic_color_14 : tic_color_15, true, 1, false);
+        tic_api_print(tic, label, x + 1, y + Header + r * TIC_FONT_HEIGHT, pattern && noteBeat(music, index) ? tic_color_14 : tic_color_15, true, 1, false);
     }
 }
 
@@ -1876,7 +1875,7 @@ static void drawPianoNoteColumn(Music* music, s32 x, s32 y)
                 else tic_api_rect(tic, rect.x, rect.y, rect.w, rect.h, over ? tic_color_14 : tic_color_15);
             }
 
-            if(noteBeat(index) && row->note != NoteStop)
+            if(noteBeat(music, index) && row->note != NoteStop)
             {
                 static u8 Colors[NOTES] = 
                 {
@@ -1943,7 +1942,7 @@ static void drawPianoOctaveColumn(Music* music, s32 x, s32 y)
                 for(s32 i = 0; i < OCTAVES; i++)
                     tic_api_rect(tic, x + i * OctaveWidth, y + r * OctaveHeight + (Header + OctaveHeight / 2 - 1), OctaveWidth - 1, 1, tic_color_15);                
 
-            if(noteBeat(index))
+            if(noteBeat(music, index))
             {
                 static u8 Colors[OCTAVES] = 
                 {
@@ -2009,7 +2008,7 @@ static void drawPianoSfxColumn(Music* music, s32 x, s32 y)
             else
                 tic_api_print(tic, "--", 
                     x + 1, y + Header + r * TIC_FONT_HEIGHT, 
-                    noteBeat(index) ? tic_color_13 : tic_color_14, true, 1, false);
+                    noteBeat(music, index) ? tic_color_13 : tic_color_14, true, 1, false);
         }        
     }
     else
@@ -2070,12 +2069,12 @@ static void drawPianoCommandColumn(Music* music, s32 x, s32 y)
 
             tic_api_print(tic, MusicCommands + 1, 
                 x + 1, y + Header + r * TIC_FONT_HEIGHT, 
-                noteBeat(index) ? tic_color_14 : tic_color_15, true, 1, false);
+                noteBeat(music, index) ? tic_color_14 : tic_color_15, true, 1, false);
 
             if(overRow == r && command > tic_music_cmd_empty)
                 tic_api_print(tic, (char[]){MusicCommands[command], '\0'}, 
                     x + 1 + (command - 1) * TIC_FONT_WIDTH, y + Header + r * TIC_FONT_HEIGHT, 
-                    noteBeat(index) ? tic_color_13 : tic_color_14, true, 1, false);
+                    noteBeat(music, index) ? tic_color_13 : tic_color_14, true, 1, false);
 
             if(row->command > tic_music_cmd_empty)
                 tic_api_print(tic, (char[]){MusicCommands[row->command], '\0'}, 
@@ -2136,7 +2135,7 @@ static void drawPianoXYColumn(Music* music, s32 x, s32 y)
             else
                 tic_api_print(tic, "--", 
                     x + 1, y + Header + r * TIC_FONT_HEIGHT, 
-                    noteBeat(index) ? tic_color_13 : tic_color_14, true, 1, false);
+                    noteBeat(music, index) ? tic_color_13 : tic_color_14, true, 1, false);
         }        
     }
     else
@@ -2267,12 +2266,38 @@ static void processPianoKeyboard(Music* music)
     }
 }
 
+static void drawBeatButton(Music* music, s32 x, s32 y)
+{
+    tic_mem* tic = music->tic;
+
+    static const char Label44[] = "4/4";
+    static const char Label34[] = "3/4";
+
+    tic_rect rect = {x, y, (sizeof Label44 - 1) * TIC_ALTFONT_WIDTH - 1, TIC_FONT_HEIGHT - 1};
+
+    bool down = false;
+    if(checkMousePos(&rect))
+    {
+        setCursor(tic_cursor_hand);
+
+        if(checkMouseDown(&rect, tic_mouse_left))
+            down = true;
+
+        if(checkMouseClick(&rect, tic_mouse_left))
+            music->beat34 = !music->beat34;
+    }
+
+    tic_api_print(tic, music->beat34 ? Label34 : Label44, x, y + 1, tic_color_0, true, 1, true);
+    tic_api_print(tic, music->beat34 ? Label34 : Label44, x, y + (down ? 1 : 0), tic_color_12, true, 1, true);
+}
+
 static void drawPianoLayout(Music* music)
 {
     processPianoKeyboard(music);
 
     drawPianoFrames(music, 3, 20);
     drawPianoPattern(music, 73, 20);
+    drawBeatButton(music, 4, 129);
 }
 
 static void scrollNotes(Music* music, s32 delta)
@@ -2435,6 +2460,7 @@ void initMusic(Music* music, tic_mem* tic, tic_music* src)
         .tick = tick,
         .src = src,
         .track = 0,
+        .beat34 = false,
         .tracker =
         {
             .follow = true,

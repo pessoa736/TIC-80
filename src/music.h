@@ -33,6 +33,7 @@ struct Music
     tic_music* src;
 
     u8 track:MUSIC_TRACKS_BITS;
+    bool beat34;
 
     struct
     {
@@ -45,6 +46,7 @@ struct Music
         s32 row;
         s32 scroll;
         s32 note;
+
 
         struct
         {
