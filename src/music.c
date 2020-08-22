@@ -1684,6 +1684,8 @@ static void drawPianoFrames(Music* music, s32 x, s32 y)
 
     x += ColWidth + 1;
 
+    // !TODO: check if we need this condition here
+    if(tic->ram.sound_state.flag.music_state == tic_music_stop || !music->tracker.follow)
     {
         tic_rect rect = {x, y + Header - 1, (TIC_FONT_WIDTH * 2 + 1) * TIC_SOUND_CHANNELS, MUSIC_FRAMES * TIC_FONT_HEIGHT + 1};
 
@@ -1812,7 +1814,28 @@ static void drawPianoRowColumn(Music* music, s32 x, s32 y)
 
         char label[] = "00";
         sprintf(label, "%02i", index);
-        tic_api_print(tic, label, x + 1, y + Header + r * TIC_FONT_HEIGHT, pattern && noteBeat(music, index) ? tic_color_14 : tic_color_15, true, 1, false);
+
+        if(checkPlayRow(music, index))
+        {
+            static const u8 Icon[] =
+            {
+                0b00000000,
+                0b01000000,
+                0b01100000,
+                0b01110000,
+                0b01100000,
+                0b01000000,
+                0b00000000,
+                0b00000000,
+            };
+
+            drawBitIcon(x - TIC_ALTFONT_WIDTH, y + r * TIC_FONT_HEIGHT + Header, Icon, tic_color_0);
+            drawBitIcon(x - TIC_ALTFONT_WIDTH, y + r * TIC_FONT_HEIGHT + (Header - 1), Icon, tic_color_12);
+
+            tic_api_print(tic, label, x + 1, y + Header + r * TIC_FONT_HEIGHT, tic_color_12, true, 1, false);
+        }
+        else 
+            tic_api_print(tic, label, x + 1, y + Header + r * TIC_FONT_HEIGHT, pattern && noteBeat(music, index) ? tic_color_14 : tic_color_15, true, 1, false);
     }
 }
 
@@ -2374,21 +2397,6 @@ static void drawTrackerLayout(Music* music)
     tic_mem* tic = music->tic;
 
     processKeyboard(music);
-
-    if(music->tracker.follow)
-    {
-        const tic_sound_state* pos = getMusicPos(music);
-
-        if(pos->music.track == music->track && 
-            music->tracker.row >= 0 &&
-            pos->music.row >= 0)
-        {
-            music->tracker.frame = pos->music.frame;
-            music->tracker.row = pos->music.row;
-            updateTracker(music);
-        }
-    }
-
     drawTracker(music, 7, 35);
 }
 
@@ -2416,6 +2424,24 @@ static void tick(Music* music)
                 updateScroll(music);
             }
         }
+    }
+
+    if(music->tracker.follow)
+    {
+        const tic_sound_state* pos = getMusicPos(music);
+
+        if(pos->music.track == music->track && 
+            music->tracker.row >= 0 &&
+            pos->music.row >= 0)
+        {
+            music->tracker.frame = pos->music.frame;
+            music->tracker.row = pos->music.row;
+            updateTracker(music);
+        }
+
+        // !TODO: join these variables
+        if(tic->ram.sound_state.flag.music_state != tic_music_stop)
+            music->piano.select.y = music->tracker.frame;
     }
 
     for (s32 i = 0; i < TIC_SOUND_CHANNELS; i++)
