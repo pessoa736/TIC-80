@@ -455,8 +455,6 @@ static s32 getOctave(Music* music)
 
 static void setSfxId(tic_track_pattern* pattern, s32 row, s32 sfx)
 {
-    if(sfx >= SFX_COUNT) sfx = SFX_COUNT-1;
-
     tic_tool_set_track_row_sfx(&pattern->rows[row], sfx);
 }
 
@@ -1857,15 +1855,19 @@ static void drawPianoNoteColumn(Music* music, s32 x, s32 y)
                         {
                         case NoteNone:
                             row->note = NoteStart + n;
-                            // !TODO: remove this or use music->last.octave
-                            row->octave = 3;
+                            row->octave = music->last.octave;
+                            tic_tool_set_track_row_sfx(row, music->last.sfx);
                             break;
                         case NoteStop:
                             row->note = NoteNone;
+                            row->octave = 0;
                             break;
                         default:
                             if(row->note - NoteStart == n)
+                            {
                                 row->note = NoteStop;
+                                row->octave = 0;
+                            }
                             else row->note = NoteStart + n;
                         }
 
@@ -1937,7 +1939,7 @@ static void drawPianoOctaveColumn(Music* music, s32 x, s32 y)
 
                         if(checkMouseClick(&rect, tic_mouse_left))
                         {
-                            row->octave = n;
+                            music->last.octave = row->octave = n;
                             history_add(music->history);
                         }
                     }
@@ -2058,6 +2060,9 @@ static void drawPianoCommandColumn(Music* music, s32 x, s32 y)
                 tic_track_row* row = &pattern->rows[rowIndex(music, overRow)];
 
                 row->command = command != row->command ? command : tic_music_cmd_empty;
+
+                if(row->command == tic_music_cmd_empty)
+                    row->param1 = row->param2 = 0;
 
                 history_add(music->history);
             }
@@ -2265,6 +2270,8 @@ static void processPianoKeyboard(Music* music)
                 s32 sfx = setDigit(1 - music->piano.edit.x & 1, tic_tool_get_track_row_sfx(row), dec);
                 tic_tool_set_track_row_sfx(row, sfx);
                 history_add(music->history);
+
+                music->last.sfx = tic_tool_get_track_row_sfx(row);
 
                 updatePianoEditCol(music);
             }
