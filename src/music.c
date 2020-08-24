@@ -647,7 +647,76 @@ typedef struct
     u8 size;
 } ClipboardHeader;
 
-static void copyToClipboard(Music* music, bool cut)
+static void copyPianoToClipboard(Music* music, bool cut)
+{
+    tic_track_pattern* pattern = getFramePattern(music, music->piano.col, music->frame);
+
+    if(pattern)
+    {
+        ClipboardHeader header = {MUSIC_PATTERN_ROWS};
+
+        enum{HeaderSize = sizeof(ClipboardHeader), Size = sizeof(tic_track_pattern) + HeaderSize};
+
+        u8* data = malloc(Size);
+
+        if(data)
+        {
+            memcpy(data, &header, HeaderSize);
+            memcpy(data + HeaderSize, pattern->rows, sizeof(tic_track_pattern));
+
+            toClipboard(data, Size, true);
+
+            free(data);
+
+            if(cut)
+            {
+                memset(pattern->rows, 0, sizeof(tic_track_pattern));
+                history_add(music->history);
+            }
+        }       
+    }
+}
+
+static void copyPianoFromClipboard(Music* music)
+{
+    tic_track_pattern* pattern = getFramePattern(music, music->piano.col, music->frame);
+
+    if(pattern && getSystem()->hasClipboardText())
+    {
+        char* clipboard = getSystem()->getClipboardText();
+
+        if(clipboard)
+        {
+            s32 size = strlen(clipboard)/2;
+
+            enum{RowSize = sizeof(tic_track_pattern) / MUSIC_PATTERN_ROWS, HeaderSize = sizeof(ClipboardHeader)};
+
+            if(size > HeaderSize)
+            {
+                u8* data = malloc(size);
+
+                tic_tool_str2buf(clipboard, strlen(clipboard), data, true);
+
+                ClipboardHeader header = {0};
+
+                memcpy(&header, data, HeaderSize);
+
+                if(size == header.size * RowSize + HeaderSize 
+                    && size == sizeof(tic_track_pattern) + HeaderSize)
+                {
+                    memcpy(pattern->rows, data + HeaderSize, header.size * RowSize);
+                    history_add(music->history);
+                }
+
+                free(data);
+            }
+
+            getSystem()->freeClipboardText(clipboard);
+        }
+    }
+}
+
+static void copyTrackerToClipboard(Music* music, bool cut)
 {
     tic_track_pattern* pattern = getChannelPattern(music);
 
@@ -688,7 +757,7 @@ static void copyToClipboard(Music* music, bool cut)
     }
 }
 
-static void copyFromClipboard(Music* music)
+static void copyTrackerFromClipboard(Music* music)
 {
     tic_track_pattern* pattern = getChannelPattern(music);
 
@@ -726,6 +795,24 @@ static void copyFromClipboard(Music* music)
 
             getSystem()->freeClipboardText(clipboard);
         }
+    }
+}
+
+static void copyToClipboard(Music* music, bool cut)
+{
+    switch (music->tab)
+    {
+    case MUSIC_TRACKER_TAB: copyTrackerToClipboard(music, cut); break;
+    case MUSIC_PIANO_TAB: copyPianoToClipboard(music, cut); break;
+    }
+}
+
+static void copyFromClipboard(Music* music)
+{
+    switch (music->tab)
+    {
+    case MUSIC_TRACKER_TAB: copyTrackerFromClipboard(music); break;
+    case MUSIC_PIANO_TAB: copyPianoFromClipboard(music); break;
     }
 }
 
