@@ -2,7 +2,7 @@
 # naett
 ################################
 
-if(NOT RPI AND NOT N3DS AND NOT EMSCRIPTEN AND NOT BAREMETALPI)
+if(NOT RPI AND NOT NINTENDO_3DS AND NOT EMSCRIPTEN AND NOT BAREMETALPI)
     set(USE_NAETT TRUE)
 endif()
 
@@ -11,6 +11,23 @@ if(LINUX)
     find_package(CURL)
     if(NOT CURL_FOUND)
         set(USE_NAETT FALSE)
+    endif()
+endif()
+
+if(PREFER_SYSTEM_LIBRARIES)
+    find_path(naett_INCLUDE_DIR NAMES naett.h)
+    find_library(naett_LIBRARY NAMES naett)
+    if(naett_INCLUDE_DIR AND naett_LIBRARY)
+        add_library(naett UNKNOWN IMPORTED GLOBAL)
+        set_target_properties(naett PROPERTIES
+            IMPORTED_LOCATION "${naett_LIBRARY}"
+            INTERFACE_INCLUDE_DIRECTORIES "${naett_INCLUDE_DIR}"
+        )
+        message(STATUS "Use system library: naett")
+        set(USE_NAETT TRUE)
+        return()
+    else()
+        message(WARNING "System library naett not found")
     endif()
 endif()
 

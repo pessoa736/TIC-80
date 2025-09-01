@@ -209,6 +209,27 @@ static s32 lua_cls(lua_State* lua)
     return 0;
 }
 
+static s32 lua_paint(lua_State* lua)
+{
+    s32 top = lua_gettop(lua);
+
+    if(top >= 3 && top <= 4)
+    {
+        s32 x = getLuaNumber(lua, 1);
+        s32 y = getLuaNumber(lua, 2);
+        s32 color = getLuaNumber(lua, 3);
+        s32 bordercolor = top >= 4 ? getLuaNumber(lua, 4) : -1;
+
+        tic_core* core = getLuaCore(lua);
+        tic_mem* tic = (tic_mem*)core;
+
+        core->api.paint(tic, x, y, color, bordercolor);
+    }
+    else luaL_error(lua, "invalid parameters, paint(x y color [bordercolor])\n");
+
+    return 0;
+}
+
 static s32 lua_pix(lua_State* lua)
 {
     s32 top = lua_gettop(lua);
@@ -555,7 +576,7 @@ static s32 lua_ttri(lua_State* lua)
             }
         }
 
-        float z[3];
+        float z[3] = {0, 0, 0};
         bool depth = false;
 
         if(top == 17)
@@ -1574,14 +1595,14 @@ static s32 lua_ffts(lua_State* lua)
     return 0;
 }
 
-static s32 lua_dofile(lua_State *lua)
+static int lua_dofile(lua_State *lua)
 {
     luaL_error(lua, "unknown method: \"dofile\"\n");
 
     return 0;
 }
 
-static s32 lua_loadfile(lua_State *lua)
+static int lua_loadfile(lua_State *lua)
 {
     luaL_error(lua, "unknown method: \"loadfile\"\n");
 
@@ -1613,12 +1634,12 @@ void luaapi_init(tic_core* core)
 {
     static const struct{lua_CFunction func; const char* name;} ApiItems[] =
     {
-#define API_FUNC_DEF(name, ...) {lua_ ## name, #name},
+#define API_FUNC_DEF(name, ...) {(lua_CFunction)(lua_ ## name), #name},
         TIC_API_LIST(API_FUNC_DEF)
 #undef  API_FUNC_DEF
 
 #if defined(BUILD_DEPRECATED)
-        {lua_textri, "textri"},
+        {(lua_CFunction)lua_textri, "textri"},
 #endif
     };
 
@@ -1644,7 +1665,7 @@ void luaapi_close(tic_mem* tic)
 ** Message handler which appends stract trace to exceptions.
 ** This function was extractred from lua.c.
 */
-static s32 msghandler (lua_State *lua)
+static int msghandler (lua_State *lua)
 {
     const char *msg = lua_tostring(lua, 1);
     if (msg == NULL) /* is error object not a string? */
@@ -1655,7 +1676,13 @@ static s32 msghandler (lua_State *lua)
         else
             msg = lua_pushfstring(lua, "(error object is a %s value)", luaL_typename(lua, 1));
     }
-    luaL_traceback(lua, lua, msg, 1);  /* append a standard traceback */
+    /* call the debug.traceback function instead of luaL_traceback so */
+    /* customized sourcemap-aware debug.traceback can give better line numbers */
+    lua_getglobal(lua, "debug");
+    lua_pushstring(lua, "traceback");
+    lua_gettable(lua, -2);
+    lua_pushstring(lua, msg);
+    lua_call(lua, 1, 1);
     return 1;  /* return the traceback */
 }
 
