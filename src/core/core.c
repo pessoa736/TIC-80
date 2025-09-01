@@ -43,6 +43,58 @@
 
 #include "blip_buf.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#define TIC80_HAVE_PTHREAD 1
+#include <pthread.h>
+#if !defined(__APPLE__)
+#include <errno.h>
+#endif
+#endif
+
+#if TIC80_HAVE_PTHREAD
+typedef struct {
+    u32* base;          // pointer to product.screen
+    s32 y0, y1;         // inclusive start, exclusive end in full framebuffer coords
+    const u32* p0;      // palette 0
+    const u32* p1;      // palette 1
+    const u8* s0;       // vbank0 screen bytes
+    const u8* s1;       // vbank1 screen bytes
+    u8 clear;           // clear color nibble
+    u8 clearPair;       // packed clear nibble in both halves
+} BlitArgs;
+
+static void* blit_range(void* argp)
+{
+    BlitArgs* a = (BlitArgs*)argp;
+    for (s32 row = a->y0; row < a->y1; ++row)
+    {
+        u32* rp = a->base + row * TIC80_FULLWIDTH + TIC80_MARGIN_LEFT;
+        const s32 rowIdx = (row - TIC80_MARGIN_TOP) * TIC80_WIDTH;
+        const s32 byteBase = rowIdx >> 1;
+        const s32 byteCount = TIC80_WIDTH >> 1;
+        for (s32 i = 0; i < byteCount; ++i)
+        {
+            u8 b1 = a->s1[byteBase + i];
+            if (b1 == a->clearPair)
+            {
+                u8 b0 = a->s0[byteBase + i];
+                *rp++ = a->p0[b0 & 0x0F];
+                *rp++ = a->p0[(b0 >> 4) & 0x0F];
+            }
+            else
+            {
+                u8 b0 = a->s0[byteBase + i];
+                u8 lo1 = b1 & 0x0F;
+                u8 hi1 = (b1 >> 4) & 0x0F;
+                *rp++ = (lo1 != a->clear) ? a->p1[lo1] : a->p0[b0 & 0x0F];
+                *rp++ = (hi1 != a->clear) ? a->p1[hi1] : a->p0[(b0 >> 4) & 0x0F];
+            }
+        }
+    }
+    return NULL;
+}
+#endif
+
 static_assert(TIC_BANK_BITS == 3,                   "tic_bank_bits");
 // Allow larger maps when resolution is increased beyond the default.
 static_assert(sizeof(tic_map) < 1024 * 256,         "tic_map");
@@ -651,6 +703,66 @@ void tic_core_blit_ex(tic_mem* tic, tic_blit_callback clb)
 
     for(; row != TIC80_MARGIN_TOP; ++row, rowPtr += TIC80_FULLWIDTH)
         UPDBDR();
+
+    // If no callbacks and no per-vbank offsets, we can render the active area in parallel
+#if TIC80_HAVE_PTHREAD
+    bool can_parallel = !(clb.border || clb.scanline) && (core->state.perf.blit_threads >= 2);
+#else
+    bool can_parallel = false;
+#endif
+
+    // sample offsets once (when there's no scanline, these should be frame-constant)
+    tic_vram* _vb0 = vbank0(core);
+    tic_vram* _vb1 = vbank1(core);
+    const bool no_offset_frame = (*(u16*)&_vb0->vars.offset == 0 && *(u16*)&_vb1->vars.offset == 0);
+
+#if TIC80_HAVE_PTHREAD
+    if (can_parallel && no_offset_frame)
+    {
+        // draw top border rows already handled above; now render active area in two threads
+        // Prepare shared constants
+        const u32* p0 = pal0.data;
+        const u32* p1 = pal1.data;
+        const u8* s0 = (const u8*)_vb0->screen.data;
+        const u8* s1 = (const u8*)_vb1->screen.data;
+        const u8 clear = _vb1->vars.clear & 0x0F;
+        const u8 clearPair = (u8)(clear | (clear << 4));
+
+    // worker defined at file-scope: blit_range(BlitArgs*)
+
+        // Split rows
+        const s32 yStart = TIC80_MARGIN_TOP;
+        const s32 yEnd = TIC80_FULLHEIGHT - TIC80_MARGIN_BOTTOM;
+        const s32 mid = yStart + (yEnd - yStart) / 2;
+
+    BlitArgs a0 = { tic->product.screen, yStart, mid, p0, p1, s0, s1, clear, clearPair };
+    BlitArgs a1 = { tic->product.screen, mid, yEnd, p0, p1, s0, s1, clear, clearPair };
+
+        pthread_t t0, t1;
+        pthread_create(&t0, NULL, blit_range, &a0);
+        pthread_create(&t1, NULL, blit_range, &a1);
+        pthread_join(t0, NULL);
+        pthread_join(t1, NULL);
+
+        // Fill left/right borders and bottom border rows
+        // Left/right: loop rows and memset borders to current border color
+        const u32 borderColor = pal0.data[vbank0(core)->vars.border];
+        for (s32 r = yStart; r < yEnd; ++r)
+        {
+            u32* rp = tic->product.screen + r * TIC80_FULLWIDTH;
+            memset4(rp, borderColor, TIC80_MARGIN_LEFT);
+            memset4(rp + TIC80_MARGIN_LEFT + TIC80_WIDTH, borderColor, TIC80_MARGIN_RIGHT);
+        }
+
+        // Bottom rows
+        row = yEnd;
+        rowPtr = tic->product.screen + row * TIC80_FULLWIDTH;
+        for(; row != TIC80_FULLHEIGHT; ++row, rowPtr += TIC80_FULLWIDTH)
+            UPDBDR();
+
+        return;
+    }
+#endif
 
     for(; row != TIC80_FULLHEIGHT - TIC80_MARGIN_BOTTOM; ++row)
     {

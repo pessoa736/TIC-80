@@ -109,6 +109,12 @@ static struct
 #if defined(CRT_SHADER_SUPPORT)
         u32 shader;
         GPU_ShaderBlock block;
+    // cached uniform locations (avoid per-frame lookups)
+    s32 u_trg_x;
+    s32 u_trg_y;
+    s32 u_trg_w;
+    s32 u_trg_h;
+    s32 u_res; // vec2(TIC80_FULLWIDTH, TIC80_FULLHEIGHT)
 #endif
     } screen;
 
@@ -376,11 +382,8 @@ static void updateTextureBytes(Texture texture, const void* data, s32 width, s32
     else
 #endif
     {
-        void* pixels = NULL;
-        s32 pitch = 0;
-        SDL_LockTexture(texture.sdl, NULL, &pixels, &pitch);
-        SDL_memcpy(pixels, data, pitch * height);
-        SDL_UnlockTexture(texture.sdl);
+    // Use SDL_UpdateTexture for lower overhead than lock/unlock where supported
+    SDL_UpdateTexture(texture.sdl, NULL, data, width * (s32)sizeof(u32));
     }
 }
 
@@ -1539,9 +1542,7 @@ static void loadCrtShader()
         "uniform float trg_y;"                                                              "\n"
         "uniform float trg_w;"                                                              "\n"
         "uniform float trg_h;"                                                              "\n"
-        ""                                                                                  "\n"
-        "// Emulated input resolution."                                                     "\n"
-        "vec2 res=vec2(256.0,144.0);"                                                       "\n"
+        "uniform vec2 res;"                                                                 "\n"
         ""                                                                                  "\n"
         "// Hardness of scanline."                                                          "\n"
         "//  -8.0 = soft"                                                                   "\n"
@@ -1687,6 +1688,13 @@ static void loadCrtShader()
     {
         platform.screen.block = GPU_LoadShaderBlock(platform.screen.shader, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
         GPU_ActivateShaderProgram(platform.screen.shader, &platform.screen.block);
+
+    // cache uniform locations
+    platform.screen.u_trg_x = GPU_GetUniformLocation(platform.screen.shader, "trg_x");
+    platform.screen.u_trg_y = GPU_GetUniformLocation(platform.screen.shader, "trg_y");
+    platform.screen.u_trg_w = GPU_GetUniformLocation(platform.screen.shader, "trg_w");
+    platform.screen.u_trg_h = GPU_GetUniformLocation(platform.screen.shader, "trg_h");
+    platform.screen.u_res   = GPU_GetUniformLocation(platform.screen.shader, "res");
     }
     else
     {
@@ -1761,15 +1769,19 @@ static void gpuTick()
 
     if(!studio_config(platform.studio)->soft && studio_config(platform.studio)->options.crt)
     {
-        if(platform.screen.shader == 0)
+    if(platform.screen.shader == 0)
             loadCrtShader();
 
         GPU_ActivateShaderProgram(platform.screen.shader, &platform.screen.block);
 
-        static const char* Uniforms[] = {"trg_x", "trg_y", "trg_w", "trg_h"};
-
-        for(s32 i = 0; i < COUNT_OF(Uniforms); ++i)
-            GPU_SetUniformf(GPU_GetUniformLocation(platform.screen.shader, Uniforms[i]), (&rect.x)[i]);
+    // set transform uniforms using cached locations
+    GPU_SetUniformf(platform.screen.u_trg_x, (float)rect.x);
+    GPU_SetUniformf(platform.screen.u_trg_y, (float)rect.y);
+    GPU_SetUniformf(platform.screen.u_trg_w, (float)rect.w);
+    GPU_SetUniformf(platform.screen.u_trg_h, (float)rect.h);
+    // set emulated resolution to match current framebuffer
+    float resv[2] = { (float)TIC80_FULLWIDTH, (float)TIC80_FULLHEIGHT };
+    GPU_SetUniformfv(platform.screen.u_res, 2, 1, resv);
 
         GPU_BlitScale(platform.screen.texture.gpu, NULL, platform.screen.renderer.gpu, rect.x, rect.y,
             (float)rect.w / TIC80_FULLWIDTH, (float)rect.h / TIC80_FULLHEIGHT);

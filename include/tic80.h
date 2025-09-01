@@ -190,6 +190,15 @@ TIC80_API void tic80_tick(tic80* tic, tic80_input input, u64 (*counter)(), u64 (
 TIC80_API void tic80_sound(tic80* tic);
 TIC80_API void tic80_delete(tic80* tic);
 
+// threading and memory/screen helpers
+TIC80_API void tic80_set_blit_threads(tic80* tic, s32 threads); // 1 or 2
+TIC80_API s32  tic80_get_blit_threads(tic80* tic);
+TIC80_API void tic80_get_screen_info(s32* width, s32* height, s32* fullwidth, s32* fullheight, s32* bpp);
+TIC80_API s32  tic80_get_vram_size();
+TIC80_API s32  tic80_get_ram_size();
+TIC80_API u8*  tic80_get_ram_ptr(tic80* tic);   // points to start of RAM
+TIC80_API u8*  tic80_get_vram_ptr(tic80* tic);  // points to start of VRAM region inside RAM
+
 #ifdef __cplusplus
 }
 #endif

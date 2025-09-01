@@ -24,6 +24,7 @@
 #include "script.h"
 #include "tools.h"
 #include "cart.h"
+#include "core/core.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -134,4 +135,48 @@ TIC80_API void tic80_delete(tic80* tic)
 {
     tic_mem* mem = (tic_mem*)tic;
     tic_core_close(mem);
+}
+
+TIC80_API void tic80_set_blit_threads(tic80* tic, s32 threads)
+{
+    tic_core* core = (tic_core*)((u8*)tic - offsetof(tic_core, memory.product));
+    if (threads < 1) threads = 1; if (threads > 2) threads = 2;
+    core->state.perf.blit_threads = threads;
+}
+
+TIC80_API s32 tic80_get_blit_threads(tic80* tic)
+{
+    tic_core* core = (tic_core*)((u8*)tic - offsetof(tic_core, memory.product));
+    return core->state.perf.blit_threads ? core->state.perf.blit_threads : 1;
+}
+
+TIC80_API void tic80_get_screen_info(s32* width, s32* height, s32* fullwidth, s32* fullheight, s32* bpp)
+{
+    if (width) *width = TIC80_WIDTH;
+    if (height) *height = TIC80_HEIGHT;
+    if (fullwidth) *fullwidth = TIC80_FULLWIDTH;
+    if (fullheight) *fullheight = TIC80_FULLHEIGHT;
+    if (bpp) *bpp = TIC_PALETTE_BPP;
+}
+
+TIC80_API s32 tic80_get_vram_size()
+{
+    return TIC_VRAM_SIZE;
+}
+
+TIC80_API s32 tic80_get_ram_size()
+{
+    return TIC_RAM_SIZE;
+}
+
+TIC80_API u8* tic80_get_ram_ptr(tic80* tic)
+{
+    tic_mem* mem = (tic_mem*)tic;
+    return (u8*)mem->ram;
+}
+
+TIC80_API u8* tic80_get_vram_ptr(tic80* tic)
+{
+    tic_mem* mem = (tic_mem*)tic;
+    return (u8*)&mem->ram->vram;
 }

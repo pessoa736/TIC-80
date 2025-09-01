@@ -166,6 +166,10 @@ typedef struct
     } clip;
 
     bool initialized;
+
+    struct {
+        s32 blit_threads; // 1 or 2; 0 means default (1)
+    } perf;
 } tic_core_state_data;
 
 typedef struct
