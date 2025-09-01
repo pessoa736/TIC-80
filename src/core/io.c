@@ -27,9 +27,10 @@
 
 static_assert(sizeof(tic80_gamepad) == 1, "tic80_gamepad");
 static_assert(sizeof(tic80_gamepads) == 4, "tic80_gamepads");
-static_assert(sizeof(tic80_mouse) == 4, "tic80_mouse");
+static_assert(sizeof(tic80_mouse) == 6, "tic80_mouse");
 static_assert(sizeof(tic80_keyboard) == 4, "tic80_keyboard");
-static_assert(sizeof(tic80_input) == 12, "tic80_input");
+// tic80_input grew due to wider tic80_mouse
+static_assert(sizeof(tic80_input) == 16, "tic80_input");
 
 static bool isKeyPressed(const tic80_keyboard* input, tic_key key)
 {
@@ -127,9 +128,17 @@ bool tic_api_keyp(tic_mem* tic, tic_key key, s32 hold, s32 period)
 
 tic_point tic_api_mouse(tic_mem* memory)
 {
-    return memory->ram->input.mouse.relative
-        ? (tic_point){memory->ram->input.mouse.rx, memory->ram->input.mouse.ry}
-        : (tic_point){memory->ram->input.mouse.x - TIC80_OFFSET_LEFT, memory->ram->input.mouse.y - TIC80_OFFSET_TOP};
+    if(memory->ram->input.mouse.relative)
+        return (tic_point){memory->ram->input.mouse.rx, memory->ram->input.mouse.ry};
+
+    // If SDL path marked mouse invalid (set to -1), our widened u16 stores 0xFFFF.
+    if(memory->ram->input.mouse.x == (u16)0xFFFF || memory->ram->input.mouse.y == (u16)0xFFFF)
+        return (tic_point){-1, -1};
+
+    return (tic_point){
+        (s32)memory->ram->input.mouse.x - TIC80_OFFSET_LEFT,
+        (s32)memory->ram->input.mouse.y - TIC80_OFFSET_TOP
+    };
 }
 
 void tic_core_tick_io(tic_mem* tic)

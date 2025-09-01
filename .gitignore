@@ -3,6 +3,7 @@
 *.opendb
 *.suo
 compile_commands.json
+build-opt/*
 compile_flags.txt
 sexit
 .vscode/

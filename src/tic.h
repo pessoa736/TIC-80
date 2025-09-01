@@ -26,8 +26,12 @@
 #include "tic80.h"
 #include "defines.h"
 
-#define TIC_VRAM_SIZE (16*1024) //16K
-#define TIC_RAM_SIZE (TIC_VRAM_SIZE+80*1024) //16K+80K
+#define TIC_VRAM_SIZE ((TIC80_WIDTH*TIC80_HEIGHT)/2 + 64)
+// Base RAM beyond VRAM was ~80 KiB for default 240x136. Map grows with resolution
+// Map bytes = (TIC80_WIDTH/TIC_SPRITESIZE)*(TIC80_HEIGHT/TIC_SPRITESIZE) * (TIC_SPRITESIZE*TIC_SPRITESIZE)
+// which simplifies to WIDTH*HEIGHT; default map cap was < 32 KiB. Scale extra to hold bigger maps.
+#define TIC_EXTRA_RAM   (80*1024 + (TIC80_WIDTH*TIC80_HEIGHT > 240*136 ? (TIC80_WIDTH*TIC80_HEIGHT - 240*136) : 0))
+#define TIC_RAM_SIZE (TIC_VRAM_SIZE + TIC_EXTRA_RAM)
 #define TIC_WASM_PAGE_COUNT 4 // 256K
 #define TIC_FONT_WIDTH 6
 #define TIC_FONT_HEIGHT 6

@@ -30,9 +30,9 @@
 extern "C" {
 #endif
 
-#define TIC80_WIDTH             240
-#define TIC80_HEIGHT            136
-#define TIC80_FULLWIDTH_BITS    8
+#define TIC80_WIDTH             480
+#define TIC80_HEIGHT            270
+#define TIC80_FULLWIDTH_BITS    9
 #define TIC80_FULLWIDTH         (1 << TIC80_FULLWIDTH_BITS)
 #define TIC80_FULLHEIGHT        (TIC80_FULLWIDTH*9/16)
 
@@ -128,15 +128,15 @@ typedef struct
         // absolute pos
         struct
         {
-            u8 x;
-            u8 y;
+            u16 x;
+            u16 y;
         };
 
         // relative values
         struct
         {
-            s8 rx;
-            s8 ry;
+            s16 rx;
+            s16 ry;
         };
     };
     

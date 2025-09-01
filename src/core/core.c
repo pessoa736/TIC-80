@@ -44,7 +44,8 @@
 #include "blip_buf.h"
 
 static_assert(TIC_BANK_BITS == 3,                   "tic_bank_bits");
-static_assert(sizeof(tic_map) < 1024 * 32,          "tic_map");
+// Allow larger maps when resolution is increased beyond the default.
+static_assert(sizeof(tic_map) < 1024 * 256,         "tic_map");
 static_assert(sizeof(tic_rgb) == 3,                 "tic_rgb");
 static_assert(sizeof(tic_palette) == 48,            "tic_palette");
 static_assert(sizeof(((tic_vram *)0)->vars) == 4,   "tic_vram vars");
@@ -75,7 +76,6 @@ void tic_api_poke(tic_mem* memory, s32 address, u8 value, s32 bits)
     if (address < 0)
         return;
 
-    tic_core* core = (tic_core*)memory;
     u8* ram = (u8*)memory->ram;
     enum{RamBits = sizeof(tic_ram) * BITS_IN_BYTE};
 
@@ -120,7 +120,6 @@ void tic_api_poke4(tic_mem* memory, s32 address, u8 value)
 
 void tic_api_memcpy(tic_mem* memory, s32 dst, s32 src, s32 size)
 {
-    tic_core* core = (tic_core*)memory;
     s32 bound = sizeof(tic_ram) - size;
 
     if (size >= 0
@@ -137,7 +136,6 @@ void tic_api_memcpy(tic_mem* memory, s32 dst, s32 src, s32 size)
 
 void tic_api_memset(tic_mem* memory, s32 dst, u8 val, s32 size)
 {
-    tic_core* core = (tic_core*)memory;
     s32 bound = sizeof(tic_ram) - size;
 
     if (size >= 0
@@ -564,8 +562,6 @@ void tic_core_tick_end(tic_mem* memory)
 {
     tic_core* core = (tic_core*)memory;
     tic80_input* input = &core->memory.ram->input;
-
-    core->state.gamepads.previous.data = input->gamepads.data;
     // SECURITY: we do not use `memory.ram.input` here because it is
     // untrustworthy since the cartridge could have modified it to
     // inject artificial keyboard/gamepad events.
@@ -661,24 +657,75 @@ void tic_core_blit_ex(tic_mem* tic, tic_blit_callback clb)
         UPDBDR();
         rowPtr += TIC80_MARGIN_LEFT;
 
-        if(*(u16*)&vbank0(core)->vars.offset == 0 && *(u16*)&vbank1(core)->vars.offset == 0)
+        // After callbacks, cache vbank pointers for this row once
+        tic_vram* vb0 = vbank0(core);
+        tic_vram* vb1 = vbank1(core);
+
+        if(*(u16*)&vb0->vars.offset == 0 && *(u16*)&vb1->vars.offset == 0)
         {
             // render line without XY offsets
-            for(s32 x = (row - TIC80_MARGIN_TOP) * TIC80_WIDTH, end = x + TIC80_WIDTH; x != end; ++x)
-                *rowPtr++ = blitpix(tic, x, x, &pal0, &pal1);
+            const u32* p0 = pal0.data;
+            const u32* p1 = pal1.data;
+            const u8* s0 = (const u8*)vb0->screen.data;
+            const u8* s1 = (const u8*)vb1->screen.data;
+            const s32 rowIdx = (row - TIC80_MARGIN_TOP) * TIC80_WIDTH;
+            const s32 byteBase = rowIdx >> 1;
+            const s32 byteCount = TIC80_WIDTH >> 1; // two pixels per byte
+            const u8 clear = vb1->vars.clear & 0x0F;
+            const u8 clearPair = (u8)(clear | (clear << 4));
+
+            for(s32 i = 0; i < byteCount; ++i)
+            {
+                u8 b1 = s1[byteBase + i];
+                if (b1 == clearPair)
+                {
+                    // both pixels clear -> take both from vb0
+                    u8 b0 = s0[byteBase + i];
+                    *rowPtr++ = p0[b0 & 0x0F];
+                    *rowPtr++ = p0[(b0 >> 4) & 0x0F];
+                }
+                else
+                {
+                    u8 b0 = s0[byteBase + i];
+                    u8 lo1 = b1 & 0x0F;
+                    u8 hi1 = (b1 >> 4) & 0x0F;
+                    *rowPtr++ = (lo1 != clear) ? p1[lo1] : p0[b0 & 0x0F];
+                    *rowPtr++ = (hi1 != clear) ? p1[hi1] : p0[(b0 >> 4) & 0x0F];
+                }
+            }
         }
         else
         {
             // render line with XY offsets
             enum{OffsetY = TIC80_HEIGHT - TIC80_MARGIN_TOP};
-            s32 start0 = (row + vbank0(core)->vars.offset.y + OffsetY) % TIC80_HEIGHT * TIC80_WIDTH;
-            s32 start1 = (row + vbank1(core)->vars.offset.y + OffsetY) % TIC80_HEIGHT * TIC80_WIDTH;
-            s32 offsetX0 = vbank0(core)->vars.offset.x;
-            s32 offsetX1 = vbank1(core)->vars.offset.x;
+            s32 start0 = (row + vb0->vars.offset.y + OffsetY) % TIC80_HEIGHT * TIC80_WIDTH;
+            s32 start1 = (row + vb1->vars.offset.y + OffsetY) % TIC80_HEIGHT * TIC80_WIDTH;
+            s32 ox0 = vb0->vars.offset.x % TIC80_WIDTH; if(ox0 < 0) ox0 += TIC80_WIDTH;
+            s32 ox1 = vb1->vars.offset.x % TIC80_WIDTH; if(ox1 < 0) ox1 += TIC80_WIDTH;
 
-            for(s32 x = TIC80_WIDTH; x != 2 * TIC80_WIDTH; ++x)
-                *rowPtr++ = blitpix(tic, (x + offsetX0) % TIC80_WIDTH + start0,
-                    (x + offsetX1) % TIC80_WIDTH + start1, &pal0, &pal1);
+            const u32* p0 = pal0.data;
+            const u32* p1 = pal1.data;
+            const u8* s0 = (const u8*)vb0->screen.data;
+            const u8* s1 = (const u8*)vb1->screen.data;
+            const u8 clear = vb1->vars.clear & 0x0F;
+            for(s32 x = 0; x < TIC80_WIDTH; ++x)
+            {
+                s32 idx0 = (x + ox0) % TIC80_WIDTH + start0;
+                s32 idx1 = (x + ox1) % TIC80_WIDTH + start1;
+                // inline 4bpp nibble fetch for both layers
+                u8 b1 = s1[idx1 >> 1];
+                u8 pix1 = (idx1 & 1) ? (b1 >> 4) & 0x0F : b1 & 0x0F;
+                if (pix1 != clear)
+                {
+                    *rowPtr++ = p1[pix1];
+                }
+                else
+                {
+                    u8 b0 = s0[idx0 >> 1];
+                    u8 pix0 = (idx0 & 1) ? (b0 >> 4) & 0x0F : b0 & 0x0F;
+                    *rowPtr++ = p0[pix0];
+                }
+            }
         }
 
         rowPtr += TIC80_MARGIN_RIGHT;
