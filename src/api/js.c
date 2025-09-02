@@ -30,6 +30,9 @@
 
 extern bool parse_note(const char* noteStr, s32* note, s32* octave);
 
+// Forward declarations for helpers used before their definitions
+static s32 getInteger(JSContext *ctx, JSValueConst val);
+
 #if defined(__unix__) || defined(__APPLE__)
 #define TIC80_JS_THREADS 1
 #include <pthread.h>

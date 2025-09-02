@@ -1,0 +1,424 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.6.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						18,
+						19,
+						20,
+						22,
+						23,
+						24,
+						25,
+						27,
+						28,
+						29,
+						31
+					]
+				},
+				{
+					"build" : "vendor/zip",
+					"hasInstallRule" : true,
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "vendor/zip",
+					"targetIndexes" : 
+					[
+						0,
+						26,
+						30
+					]
+				},
+				{
+					"build" : "vendor/pocketpy",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "vendor/pocketpy",
+					"targetIndexes" : 
+					[
+						17
+					]
+				},
+				{
+					"build" : "vendor/sdl2",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.4"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 3,
+					"source" : "vendor/sdl2",
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						21
+					]
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "TIC-80",
+					"targetIndexes" : 
+					[
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						18,
+						19,
+						20,
+						22,
+						23,
+						24,
+						25,
+						27,
+						28,
+						29,
+						31
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "zip",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						26,
+						30
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "pocketpy",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						17
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						3
+					],
+					"name" : "SDL2",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						21
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "OBJLIB::@92a7914327b57f208ce6",
+					"jsonFile" : "target-OBJLIB-Release-8ad4e24f8d3ea75fe67b.json",
+					"name" : "OBJLIB",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "SDL2::@4dfe63a1f0bce7a11f4f",
+					"jsonFile" : "target-SDL2-Release-41a0521ba0203f20541c.json",
+					"name" : "SDL2",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "SDL2-static::@4dfe63a1f0bce7a11f4f",
+					"jsonFile" : "target-SDL2-static-Release-d4523897f80542918dea.json",
+					"name" : "SDL2-static",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "SDL2_test::@4dfe63a1f0bce7a11f4f",
+					"jsonFile" : "target-SDL2_test-Release-50339cc71a9a174e63ba.json",
+					"name" : "SDL2_test",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "SDL2main::@4dfe63a1f0bce7a11f4f",
+					"jsonFile" : "target-SDL2main-Release-72c3b42dc1ac1b15ae8a.json",
+					"name" : "SDL2main",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "argparse::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-argparse-Release-4091223c41a0816e6cdc.json",
+					"name" : "argparse",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "blipbuf::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-blipbuf-Release-6a980d76758961839f63.json",
+					"name" : "blipbuf",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fennel::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fennel-Release-c3623e1638c2550a532e.json",
+					"name" : "fennel",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "giflib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-giflib-Release-1579ce613cd7d504fd61.json",
+					"name" : "giflib",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "janet::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-janet-Release-7efc1024308415db94dc.json",
+					"name" : "janet",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "js::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-js-Release-b0c7d2f17d79ce25bdcb.json",
+					"name" : "js",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "lpeg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-lpeg-Release-752dbdab2cb80d45ed4e.json",
+					"name" : "lpeg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "lua::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-lua-Release-e03ed0094f5395c19938.json",
+					"name" : "lua",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "luaapi::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-luaapi-Release-66450515f60f30a875da.json",
+					"name" : "luaapi",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "moon::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-moon-Release-c6e57b2c4328c7314323.json",
+					"name" : "moon",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "naett::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-naett-Release-dd181cbcf0dfa8961b3b.json",
+					"name" : "naett",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "png::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-png-Release-6c4ccbdeb4d159f6f9e1.json",
+					"name" : "png",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "pocketpy::@cd14dc9f4cb94acaa835",
+					"jsonFile" : "target-pocketpy-Release-f84a7f546df2c1762c42.json",
+					"name" : "pocketpy",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "python::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-python-Release-7f4e5ee033f32c24fe68.json",
+					"name" : "python",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "quickjs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-quickjs-Release-9b066c8c6372f420da27.json",
+					"name" : "quickjs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "scheme::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-scheme-Release-a11c886460e52468ce6c.json",
+					"name" : "scheme",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "sdl_headers_copy::@4dfe63a1f0bce7a11f4f",
+					"jsonFile" : "target-sdl_headers_copy-Release-2649061adfb39398550e.json",
+					"name" : "sdl_headers_copy",
+					"projectIndex" : 3
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "squirrel::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-squirrel-Release-de21241ecfcd49b9985b.json",
+					"name" : "squirrel",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tic80::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tic80-Release-ca4228572bc36d6156dc.json",
+					"name" : "tic80",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tic80core::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tic80core-Release-72559f17965a75cae0f8.json",
+					"name" : "tic80core",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "tic80studio::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-tic80studio-Release-df05e7a3ff9983565701.json",
+					"name" : "tic80studio",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "uninstall::@92a7914327b57f208ce6",
+					"jsonFile" : "target-uninstall-Release-12db7d4a4a3cad03d347.json",
+					"name" : "uninstall",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wasm::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wasm-Release-650ef9ef2cbfabb75b22.json",
+					"name" : "wasm",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wave_writer::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wave_writer-Release-25ba5b58a055de5dbe2e.json",
+					"name" : "wave_writer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "wren::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-wren-Release-eedf2a7fbc32557935a8.json",
+					"name" : "wren",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "zip::@92a7914327b57f208ce6",
+					"jsonFile" : "target-zip-Release-686958352de1cf47eb82.json",
+					"name" : "zip",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "zlib::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-zlib-Release-c56158fb8db2ff948f93.json",
+					"name" : "zlib",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a",
+		"source" : "/workspaces/TIC-80"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 1
+	}
+}

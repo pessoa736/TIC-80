@@ -1,0 +1,8 @@
+Executable : /home/codespace/android-sdk/cmake/3.18.1/bin/ninja
+arguments : 
+-C
+/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a
+SDL2
+tic80
+jvmArgs : 
+

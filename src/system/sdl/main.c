@@ -637,28 +637,50 @@ static void calcTextureRect(SDL_Rect* rect)
 
     enum{Width = TIC80_FULLWIDTH, Height = TIC80_FULLHEIGHT};
 
-    if (sw * Height < sh * Width)
+    // Available drawing height; optionally reserve bottom space for touch keyboard overlay
+    s32 available_h = sh;
+
+#if defined (TOUCH_INPUT_SUPPORT)
+    // When touch keyboard UI is enabled (not system IME) in landscape, keep bottom area for it
+    // This avoids rect.h == sh (no free space) on perfect 16:9 displays
+    const bool wantTouchKbd = studio_mem(platform.studio)->input.keyboard
+#if defined(__TIC_ANDROID__)
+        && !SDL_IsTextInputActive()
+#endif
+        ;
+
+    if (sw > sh && wantTouchKbd)
+    {
+        // Keyboard height scaled to window width (same formula used in renderKeyboard / isKbdVisible)
+        const s32 kb_h = (KBD_ROWS * sw) / KBD_COLS;
+        if (kb_h > 0 && kb_h < sh)
+            available_h = sh - kb_h;
+    }
+#endif
+
+    if (sw * Height < available_h * Width)
     {
         w = sw - (integerScale ? sw % Width : 0);
         h = Height * w / Width;
     }
     else
     {
-        h = sh - (integerScale ? sh % Height : 0);
+        h = available_h - (integerScale ? available_h % Height : 0);
         w = Width * h / Height;
     }
 
-    *rect = (SDL_Rect)
-    {
-        (sw - w) / 2,
+    // Center horizontally; vertically snap to top when we reserved space, otherwise center (or follow prior behavior)
+    s32 y = (sh - h) / 2;
 #if defined (TOUCH_INPUT_SUPPORT)
-        // snap the screen up to get a place for the software keyboard
-        sw > sh ? (sh - h) / 2 : 0,
-#else
-        (sh - h) / 2,
+    if (available_h != sh)
+        y = 0; // keep screen at the top, keyboard uses the reserved bottom area
+    else if (sw > sh)
+        y = (sh - h) / 2; // landscape without keyboard: keep previous snap-up logic via centering
+    else
+        y = (sh - h) / 2;
 #endif
-        w, h
-    };
+
+    *rect = (SDL_Rect){ (sw - w) / 2, y, w, h };
 }
 
 static void processMouse()

@@ -1,0 +1,91 @@
+name: Release Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name for the release (e.g., v1.2.3-android). If empty, a timestamped tag will be generated.'
+        required: false
+      prerelease:
+        description: 'Mark this release as a prerelease'
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  android-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r21e
+          add-to-path: false
+          local-cache: true
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Build APK (assembleRelease)
+        run: |
+          cd build/android
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+          # Normalize output path
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk tic80.apk
+          elif ls app/build/outputs/apk/*/release/*.apk 1> /dev/null 2>&1; then
+            # Handle ABI-specific output locations as in readme
+            # Prefer arm8/release if present
+            APK=$(ls app/build/outputs/apk/arm8/release/*.apk 2>/dev/null | head -n1 || true)
+            if [ -z "$APK" ]; then APK=$(ls app/build/outputs/apk/*/release/*.apk | head -n1); fi
+            cp "$APK" tic80.apk
+          else
+            echo "APK not found in expected locations" >&2
+            exit 1
+          fi
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: Compute tag and name
+        id: meta
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG_INPUT="${{ github.event.inputs.tag }}"
+            if [ -n "$TAG_INPUT" ]; then
+              TAG="$TAG_INPUT"
+            else
+              DATE=$(date +'%Y%m%d-%H%M')
+              TAG="v-android-$DATE"
+            fi
+          else
+            TAG="${GITHUB_REF##*/}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "name=TIC-80 Android ($TAG)" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release and upload APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          files: |
+            build/android/tic80.apk

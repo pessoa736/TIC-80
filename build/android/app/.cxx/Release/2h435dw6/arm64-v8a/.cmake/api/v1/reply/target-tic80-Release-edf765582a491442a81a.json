@@ -1,0 +1,423 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "bin/libtic80.so"
+		}
+	],
+	"backtrace" : 3,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"include",
+			"target_link_libraries",
+			"target_compile_definitions",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"cmake/sdl.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 176,
+				"parent" : 0
+			},
+			{
+				"file" : 0,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 160,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 183,
+				"parent" : 2
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 208,
+				"parent" : 2
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 186,
+				"parent" : 2
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 23,
+				"parent" : 2
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Dd_m3LogOutput=0 -DNDEBUG  -O2 -flto -fPIC"
+				},
+				{
+					"fragment" : "-std=gnu11"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 4,
+					"define" : "BUILD_EDITORS"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "TOUCH_INPUT_SUPPORT"
+				},
+				{
+					"define" : "tic80_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 7,
+					"path" : "/home/codespace/android-sdk/ndk/23.1.7779620/sources/android/cpufeatures"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/arm64-v8a"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/workspaces/TIC-80/include"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/workspaces/TIC-80/src"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/arm64-v8a/vendor/sdl2/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/arm64-v8a/vendor/sdl2/include-config-release"
+				}
+			],
+			"language" : "C",
+			"sourceIndexes" : 
+			[
+				0,
+				1
+			],
+			"sysroot" : 
+			{
+				"path" : "/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+			}
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 4,
+			"id" : "lpeg::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "zlib::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "blipbuf::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "tic80core::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "moon::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "wasm::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "scheme::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "squirrel::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "png::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "luaapi::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "pocketpy::@cd14dc9f4cb94acaa835"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "wave_writer::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "fennel::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "giflib::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "python::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "janet::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "argparse::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "quickjs::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "naett::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "zip::@92a7914327b57f208ce6"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "tic80studio::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "wren::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "js::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 4,
+			"id" : "lua::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 5,
+			"id" : "SDL2-static::@4dfe63a1f0bce7a11f4f"
+		}
+	],
+	"id" : "tic80::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-static-libstdc++ -Wl,--build-id=sha1 -Wl,--no-rosegment -Wl,--fatal-warnings -Wl,--no-undefined -Qunused-arguments",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 4,
+				"fragment" : "lib/libtic80studio.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 5,
+				"fragment" : "lib/libSDL2.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libtic80core.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libblipbuf.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libzlib.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/liblua.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libmoon.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/liblpeg.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libfennel.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libluaapi.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libjs.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libquickjs.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libscheme.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libsquirrel.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libpython.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libpocketpy.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libwren.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libjanet.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libwasm.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libzip.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libwave_writer.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libargparse.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libgiflib.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libpng.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "lib/libnaett.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lm",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lOpenSLES",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-ldl",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-llog",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-landroid",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lGLESv1_CM",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lGLESv2",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-latomic -lm",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX",
+		"sysroot" : 
+		{
+			"path" : "/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+		}
+	},
+	"name" : "tic80",
+	"nameOnDisk" : "libtic80.so",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 3,
+			"compileGroupIndex" : 0,
+			"path" : "src/system/sdl/main.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 3,
+			"compileGroupIndex" : 0,
+			"path" : "/home/codespace/android-sdk/ndk/23.1.7779620/sources/android/cpufeatures/cpu-features.c",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

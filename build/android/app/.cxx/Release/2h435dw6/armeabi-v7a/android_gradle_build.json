@@ -1,0 +1,264 @@
+{
+  "buildFiles": [
+    "/workspaces/TIC-80/CMakeLists.txt",
+    "/workspaces/TIC-80/cmake/argparse.cmake",
+    "/workspaces/TIC-80/cmake/blipbuf.cmake",
+    "/workspaces/TIC-80/cmake/core.cmake",
+    "/workspaces/TIC-80/cmake/fennel.cmake",
+    "/workspaces/TIC-80/cmake/gif.cmake",
+    "/workspaces/TIC-80/cmake/install.cmake",
+    "/workspaces/TIC-80/cmake/janet.cmake",
+    "/workspaces/TIC-80/cmake/libretro.cmake",
+    "/workspaces/TIC-80/cmake/lua.cmake",
+    "/workspaces/TIC-80/cmake/moon.cmake",
+    "/workspaces/TIC-80/cmake/mruby.cmake",
+    "/workspaces/TIC-80/cmake/n3ds.cmake",
+    "/workspaces/TIC-80/cmake/naett.cmake",
+    "/workspaces/TIC-80/cmake/png.cmake",
+    "/workspaces/TIC-80/cmake/pocketpy.cmake",
+    "/workspaces/TIC-80/cmake/quickjs.cmake",
+    "/workspaces/TIC-80/cmake/scheme.cmake",
+    "/workspaces/TIC-80/cmake/sdl.cmake",
+    "/workspaces/TIC-80/cmake/squirrel.cmake",
+    "/workspaces/TIC-80/cmake/studio.cmake",
+    "/workspaces/TIC-80/cmake/tools.cmake",
+    "/workspaces/TIC-80/cmake/version.cmake",
+    "/workspaces/TIC-80/cmake/wasm.cmake",
+    "/workspaces/TIC-80/cmake/wave.cmake",
+    "/workspaces/TIC-80/cmake/wren.cmake",
+    "/workspaces/TIC-80/cmake/zip.cmake",
+    "/workspaces/TIC-80/cmake/zlib.cmake",
+    "/workspaces/TIC-80/vendor/pocketpy/CMakeLists.txt",
+    "/workspaces/TIC-80/vendor/sdl2/CMakeLists.txt",
+    "/workspaces/TIC-80/vendor/sdl2/cmake/CheckCPUArchitecture.cmake",
+    "/workspaces/TIC-80/vendor/sdl2/cmake/macros.cmake",
+    "/workspaces/TIC-80/vendor/sdl2/cmake/sdlchecks.cmake",
+    "/workspaces/TIC-80/vendor/sdl2/include/SDL_config.h.cmake",
+    "/workspaces/TIC-80/vendor/sdl2/include/SDL_revision.h.cmake",
+    "/workspaces/TIC-80/vendor/zip/CMakeLists.txt",
+    "/workspaces/TIC-80/vendor/zip/cmake/Config.cmake.in",
+    "/workspaces/TIC-80/vendor/zip/cmake/cmake_uninstall.cmake.in"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/codespace/android-sdk/cmake/3.18.1/bin/ninja",
+      "-C",
+      "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/codespace/android-sdk/cmake/3.18.1/bin/ninja",
+    "-C",
+    "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "OBJLIB::@92a7914327b57f208ce6": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "OBJLIB",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/vendor/zip/CMakeFiles/OBJLIB.dir/src/zip.c.o"
+    },
+    "SDL2::@4dfe63a1f0bce7a11f4f": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/bin/libSDL2.so",
+      "runtimeFiles": [
+        "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/-Wl,--no-undefined"
+      ]
+    },
+    "SDL2-static::@4dfe63a1f0bce7a11f4f": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2-static",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libSDL2.a"
+    },
+    "SDL2_test::@4dfe63a1f0bce7a11f4f": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2_test",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libSDL2_test.a"
+    },
+    "SDL2main::@4dfe63a1f0bce7a11f4f": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2main",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libSDL2main.a"
+    },
+    "argparse::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "argparse",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libargparse.a"
+    },
+    "blipbuf::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "blipbuf",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libblipbuf.a"
+    },
+    "fennel::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "fennel",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libfennel.a"
+    },
+    "giflib::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "giflib",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libgiflib.a"
+    },
+    "janet::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "janet",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libjanet.a"
+    },
+    "js::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "js",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libjs.a"
+    },
+    "lpeg::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "lpeg",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/liblpeg.a"
+    },
+    "lua::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "lua",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/liblua.a"
+    },
+    "luaapi::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "luaapi",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libluaapi.a"
+    },
+    "moon::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "moon",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libmoon.a"
+    },
+    "naett::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "naett",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libnaett.a"
+    },
+    "png::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "png",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libpng.a"
+    },
+    "pocketpy::@cd14dc9f4cb94acaa835": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "pocketpy",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libpocketpy.a"
+    },
+    "python::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "python",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libpython.a"
+    },
+    "quickjs::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "quickjs",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libquickjs.a"
+    },
+    "scheme::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "scheme",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libscheme.a"
+    },
+    "sdl_headers_copy::@4dfe63a1f0bce7a11f4f": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "sdl_headers_copy"
+    },
+    "squirrel::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "squirrel",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libsquirrel.a"
+    },
+    "tic80::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/bin/libtic80.so",
+      "runtimeFiles": []
+    },
+    "tic80core::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80core",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libtic80core.a"
+    },
+    "tic80studio::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80studio",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libtic80studio.a"
+    },
+    "uninstall::@92a7914327b57f208ce6": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "uninstall"
+    },
+    "wasm::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "wasm",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libwasm.a"
+    },
+    "wave_writer::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "wave_writer",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libwave_writer.a"
+    },
+    "wren::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "wren",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libwren.a"
+    },
+    "zip::@92a7914327b57f208ce6": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "zip",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libzip.a"
+    },
+    "zlib::@6890427a1f51a3e7e1df": {
+      "toolchain": "toolchain",
+      "abi": "armeabi-v7a",
+      "artifactName": "zlib",
+      "output": "/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a/lib/libzlib.a"
+    }
+  },
+  "toolchains": {
+    "toolchain": {
+      "cCompilerExecutable": "/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang.lld",
+      "cppCompilerExecutable": "/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++.lld"
+    }
+  },
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

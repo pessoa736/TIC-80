@@ -1,0 +1,287 @@
+ninja: Entering directory `/workspaces/TIC-80/build/android/app/.cxx/Release/2h435dw6/armeabi-v7a'
+[1/631] Building C object CMakeFiles/wave_writer.dir/vendor/blip-buf/wave_writer.c.o
+[2/631] Linking C static library lib/libwave_writer.a
+[3/631] Building C object CMakeFiles/js.dir/src/api/js.c.o
+[4/631] Building C object CMakeFiles/fennel.dir/src/api/fennel.c.o
+[5/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/gif_err.c.o
+[6/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/egif_lib.c.o
+[7/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/dgif_lib.c.o
+[8/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/gif_font.c.o
+[9/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/gif_hash.c.o
+[10/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/openbsd-reallocarray.c.o
+[11/631] Building C object CMakeFiles/giflib.dir/vendor/giflib/gifalloc.c.o
+[12/631] Linking C static library lib/libgiflib.a
+[13/631] Building C object CMakeFiles/lpeg.dir/vendor/lpeg/lpcap.c.o
+In file included from ../../../../../../../vendor/lpeg/lpcap.c:9:
+In file included from ../../../../../../../vendor/lpeg/lpcap.h:9:
+../../../../../../../vendor/lpeg/lptypes.h:13:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+#define NDEBUG
+        ^
+<command line>:4:9: note: previous definition is here
+#define NDEBUG 1
+        ^
+1 warning generated.
+[14/631] Building C object CMakeFiles/lpeg.dir/vendor/lpeg/lpprint.c.o
+In file included from ../../../../../../../vendor/lpeg/lpprint.c:11:
+../../../../../../../vendor/lpeg/lptypes.h:13:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+#define NDEBUG
+        ^
+<command line>:4:9: note: previous definition is here
+#define NDEBUG 1
+        ^
+1 warning generated.
+[15/631] Building C object CMakeFiles/lpeg.dir/vendor/lpeg/lpvm.c.o
+In file included from ../../../../../../../vendor/lpeg/lpvm.c:13:
+In file included from ../../../../../../../vendor/lpeg/lpcap.h:9:
+../../../../../../../vendor/lpeg/lptypes.h:13:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+#define NDEBUG
+        ^
+<command line>:4:9: note: previous definition is here
+#define NDEBUG 1
+        ^
+1 warning generated.
+[16/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/adler32.c.o
+[17/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/compress.c.o
+[18/631] Building C object CMakeFiles/lpeg.dir/vendor/lpeg/lpcode.c.o
+In file included from ../../../../../../../vendor/lpeg/lpcode.c:12:
+../../../../../../../vendor/lpeg/lptypes.h:13:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+#define NDEBUG
+        ^
+<command line>:4:9: note: previous definition is here
+#define NDEBUG 1
+        ^
+1 warning generated.
+[19/631] Building C object CMakeFiles/lpeg.dir/vendor/lpeg/lptree.c.o
+In file included from ../../../../../../../vendor/lpeg/lptree.c:14:
+../../../../../../../vendor/lpeg/lptypes.h:13:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+#define NDEBUG
+        ^
+<command line>:4:9: note: previous definition is here
+#define NDEBUG 1
+        ^
+1 warning generated.
+[20/631] Linking C static library lib/liblpeg.a
+[21/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/crc32.c.o
+[22/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/infback.c.o
+[23/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/inftrees.c.o
+[24/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/inflate.c.o
+[25/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/inffast.c.o
+[26/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/uncompr.c.o
+[27/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/deflate.c.o
+[28/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/zutil.c.o
+[29/631] Building C object CMakeFiles/blipbuf.dir/vendor/blip-buf/blip_buf.c.o
+[30/631] Linking C static library lib/libblipbuf.a
+[31/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/loadlib.c.o
+[32/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/linit.c.o
+[33/631] Building C object CMakeFiles/zlib.dir/vendor/zlib/trees.c.o
+[34/631] Linking C static library lib/libzlib.a
+[35/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_bind.c.o
+[36/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_code.c.o
+[37/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_core.c.o
+[38/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_parse.c.o
+[39/631] Building C object CMakeFiles/moon.dir/src/api/moonscript.c.o
+[40/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_exec.c.o
+[41/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_env.c.o
+[42/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_function.c.o
+[43/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_info.c.o
+[44/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_module.c.o
+[45/631] Building C object CMakeFiles/wasm.dir/src/api/wasm.c.o
+[46/631] Building C object CMakeFiles/scheme.dir/src/api/scheme.c.o
+[47/631] Building C object CMakeFiles/wasm.dir/vendor/wasm3/source/m3_compile.c.o
+[48/631] Linking C static library lib/libwasm.a
+[49/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqclass.cpp.o
+[50/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqapi.cpp.o
+[51/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqdebug.cpp.o
+[52/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqbaselib.cpp.o
+[53/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqcompiler.cpp.o
+[54/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqlexer.cpp.o
+[55/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqmem.cpp.o
+[56/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqfuncstate.cpp.o
+[57/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqstate.cpp.o
+[58/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqobject.cpp.o
+[59/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqtable.cpp.o
+[60/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdaux.cpp.o
+[61/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdio.cpp.o
+[62/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdblob.cpp.o
+[63/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdrex.cpp.o
+[64/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdmath.cpp.o
+[65/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/squirrel/sqvm.cpp.o
+[66/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdstream.cpp.o
+[67/631] Building C object CMakeFiles/squirrel.dir/src/api/squirrel.c.o
+[68/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdstring.cpp.o
+[69/631] Building C object CMakeFiles/squirrel.dir/src/api/parse_note.c.o
+[70/631] Building CXX object CMakeFiles/squirrel.dir/vendor/squirrel/sqstdlib/sqstdsystem.cpp.o
+[71/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngget.c.o
+[72/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngerror.c.o
+[73/631] Building C object CMakeFiles/png.dir/vendor/libpng/png.c.o
+[74/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngread.c.o
+[75/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngpread.c.o
+[76/631] Linking CXX static library lib/libsquirrel.a
+[77/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngmem.c.o
+[78/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngrio.c.o
+[79/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngrutil.c.o
+[80/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngrtran.c.o
+[81/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngset.c.o
+[82/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngtrans.c.o
+[83/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngwio.c.o
+[84/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngwtran.c.o
+[85/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngwrite.c.o
+[86/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lapi.c.o
+[87/631] Building C object CMakeFiles/png.dir/vendor/libpng/pngwutil.c.o
+[88/631] Linking C static library lib/libpng.a
+[89/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lctype.c.o
+[90/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ldebug.c.o
+[91/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lcode.c.o
+[92/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ldo.c.o
+[93/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ldump.c.o
+[94/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lfunc.c.o
+[95/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lgc.c.o
+[96/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/llex.c.o
+[97/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lmem.c.o
+[98/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lopcodes.c.o
+[99/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lobject.c.o
+[100/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lstate.c.o
+[101/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lparser.c.o
+[102/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lstring.c.o
+[103/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ltm.c.o
+[104/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lundump.c.o
+../../../../../../../vendor/lua/lundump.c:244:33: warning: adding 'int' to a string does not append to the string [-Wstring-plus-int]
+  checkliteral(S, LUA_SIGNATURE + 1, "not a");  /* 1st char already checked */
+                  ~~~~~~~~~~~~~~^~~
+../../../../../../../vendor/lua/lundump.c:244:33: note: use array indexing to silence this warning
+  checkliteral(S, LUA_SIGNATURE + 1, "not a");  /* 1st char already checked */
+                                ^
+                  &             [  ]
+1 warning generated.
+[105/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ltable.c.o
+[106/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lzio.c.o
+[107/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lauxlib.c.o
+[108/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lbaselib.c.o
+[109/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lcorolib.c.o
+[110/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ldblib.c.o
+[111/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lvm.c.o
+[112/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/liolib.c.o
+[113/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lmathlib.c.o
+[114/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/loslib.c.o
+../../../../../../../vendor/lua/loslib.c:169:3: warning: 'tmpnam' is deprecated: tmpnam is unsafe, use mkstemp or tmpfile instead [-Wdeprecated-declarations]
+  lua_tmpnam(buff, err);
+  ^
+../../../../../../../vendor/lua/loslib.c:131:33: note: expanded from macro 'lua_tmpnam'
+#define lua_tmpnam(b,e)         { e = (tmpnam(b) == NULL); }
+                                       ^
+/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/stdio.h:167:5: note: 'tmpnam' has been explicitly marked deprecated here
+    __warnattr("tmpnam is unsafe, use mkstemp or tmpfile instead");
+    ^
+/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/sys/cdefs.h:135:40: note: expanded from macro '__warnattr'
+#define __warnattr(msg) __attribute__((deprecated(msg)))
+                                       ^
+1 warning generated.
+[115/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/ltablib.c.o
+[116/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lutf8lib.c.o
+[117/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lstrlib.c.o
+[118/631] Building C object CMakeFiles/luaapi.dir/vendor/lua/lbitlib.c.o
+[119/631] Building C object CMakeFiles/luaapi.dir/src/api/parse_note.c.o
+[120/631] Building C object CMakeFiles/python.dir/src/api/python.c.o
+FAILED: CMakeFiles/python.dir/src/api/python.c.o 
+/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=armv7-none-linux-androideabi24 --gcc-toolchain=/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64 --sysroot=/home/codespace/android-sdk/ndk/23.1.7779620/toolchains/llvm/prebuilt/linux-x86_64/sysroot -DBUILD_DEPRECATED -DTIC_RUNTIME_STATIC -I../../../../../../../vendor/pocketpy/include -I../../../../../../../include -I../../../../../../../src -I/home/codespace/android-sdk/ndk/23.1.7779620/sources/android/cpufeatures -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security  -Dd_m3LogOutput=0 -DNDEBUG  -O2 -flto -fPIC -std=gnu11 -MD -MT CMakeFiles/python.dir/src/api/python.c.o -MF CMakeFiles/python.dir/src/api/python.c.o.d -o CMakeFiles/python.dir/src/api/python.c.o -c ../../../../../../../src/api/python.c
+../../../../../../../src/api/python.c:63:17: warning: implicit declaration of function 'py_newvm' is invalid in C99 [-Wimplicit-function-declaration]
+    py_Ref vm = py_newvm();
+                ^
+../../../../../../../src/api/python.c:63:12: warning: incompatible integer to pointer conversion initializing 'py_Ref' (aka 'struct py_TValue *') with an expression of type 'int' [-Wint-conversion]
+    py_Ref vm = py_newvm();
+           ^    ~~~~~~~~~~
+../../../../../../../src/api/python.c:65:5: warning: implicit declaration of function 'py_usevm' is invalid in C99 [-Wimplicit-function-declaration]
+    py_usevm(vm);
+    ^
+../../../../../../../src/api/python.c:69:43: error: too few arguments to function call, expected 4, have 2
+    py_Ref res = py_exec(code, "worker.py");
+                 ~~~~~~~                  ^
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:171:13: note: 'py_exec' declared here
+PK_API bool py_exec(const char* source,
+            ^
+../../../../../../../src/api/python.c:70:8: warning: implicit declaration of function 'py_isnull' is invalid in C99 [-Wimplicit-function-declaration]
+    if(py_isnull(res)){
+       ^
+../../../../../../../src/api/python.c:71:110: error: use of undeclared identifier 'NULL_REF'
+        char* msg = py_formatexc(); err = msg ? strdup(msg) : strdup("exception"); PK_FREE(msg); py_clearexc(NULL_REF);
+                                                                                                             ^
+../../../../../../../src/api/python.c:73:15: warning: incompatible integer to pointer conversion initializing 'char *' with an expression of type 'bool' [-Wint-conversion]
+        char* s = py_str(res); if(s){ out = strdup(s); PK_FREE(s);} else out = strdup("");
+              ^   ~~~~~~~~~~~
+../../../../../../../src/api/python.c:79:5: warning: implicit declaration of function 'py_delvm' is invalid in C99 [-Wimplicit-function-declaration]
+    py_delvm(vm);
+    ^
+../../../../../../../src/api/python.c:108:16: warning: implicit declaration of function 'py_tuple_get' is invalid in C99 [-Wimplicit-function-declaration]
+    py_newbool(py_tuple_get(py_retval(),0), done);
+               ^
+../../../../../../../src/api/python.c:108:16: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    py_newbool(py_tuple_get(py_retval(),0), done);
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:224:33: note: passing argument to parameter here
+PK_API void py_newbool(py_OutRef, bool);
+                                ^
+../../../../../../../src/api/python.c:109:35: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
+                                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:236:33: note: passing argument to parameter here
+PK_API void py_newnone(py_OutRef);
+                                ^
+../../../../../../../src/api/python.c:109:75: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
+                                                                          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:226:32: note: passing argument to parameter here
+PK_API void py_newstr(py_OutRef, const char*);
+                               ^
+../../../../../../../src/api/python.c:109:128: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
+                                                                                                                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:226:32: note: passing argument to parameter here
+PK_API void py_newstr(py_OutRef, const char*);
+                               ^
+../../../../../../../src/api/python.c:109:181: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
+                                                                                                                                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:236:33: note: passing argument to parameter here
+PK_API void py_newnone(py_OutRef);
+                                ^
+../../../../../../../src/api/python.c:110:23: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    else { py_newnone(py_tuple_get(py_retval(),1)); py_newnone(py_tuple_get(py_retval(),2)); }
+                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:236:33: note: passing argument to parameter here
+PK_API void py_newnone(py_OutRef);
+                                ^
+../../../../../../../src/api/python.c:110:64: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    else { py_newnone(py_tuple_get(py_retval(),1)); py_newnone(py_tuple_get(py_retval(),2)); }
+                                                               ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:236:33: note: passing argument to parameter here
+PK_API void py_newnone(py_OutRef);
+                                ^
+../../../../../../../src/api/python.c:119:52: warning: implicit declaration of function 'py_tuple_get' is invalid in C99 [-Wimplicit-function-declaration]
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+                                                   ^
+../../../../../../../src/api/python.c:119:52: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+                                                   ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:224:33: note: passing argument to parameter here
+PK_API void py_newbool(py_OutRef, bool);
+                                ^
+../../../../../../../src/api/python.c:119:95: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+                                                                                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:236:33: note: passing argument to parameter here
+PK_API void py_newnone(py_OutRef);
+                                ^
+../../../../../../../src/api/python.c:119:135: warning: incompatible integer to pointer conversion passing 'int' to parameter of type 'py_OutRef' (aka 'struct py_TValue *') [-Wint-conversion]
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+                                                                                                                                      ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+../../../../../../../vendor/pocketpy/include/pocketpy/pocketpy.h:226:32: note: passing argument to parameter here
+PK_API void py_newstr(py_OutRef, const char*);
+                               ^
+18 warnings and 2 errors generated.
+[121/631] Building C object CMakeFiles/luaapi.dir/src/api/luaapi.c.o
+[122/631] Building C object CMakeFiles/scheme.dir/vendor/s7/s7.c.o
+../../../../../../../vendor/s7/s7.c:12958:13: warning: no arithmetic overflow checks in this version of s7 [-W#pragma-messages]
+    #pragma message("no arithmetic overflow checks in this version of s7")
+            ^
+1 warning generated.
+ninja: build stopped: subcommand failed.

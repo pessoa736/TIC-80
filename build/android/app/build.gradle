@@ -9,6 +9,12 @@ else {
 
 android {
     compileSdkVersion 31
+    ndkVersion '23.1.7779620'
+    externalNativeBuild {
+        cmake {
+            version '3.18.1'
+        }
+    }
     defaultConfig {
         if (buildAsApplication) {
             applicationId "com.nesbox.tic"
