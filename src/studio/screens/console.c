@@ -74,6 +74,8 @@
     macro(vram)                 \
     macro(commands)             \
     macro(api)                  \
+    macro(threads)              \
+    macro(tic_call)             \
     macro(keys)                 \
     macro(buttons)              \
     macro(startup)              \
@@ -3382,10 +3384,30 @@ static void onExport_help(Console* console, const char* param, const char* name,
             ptr += sprintf(ptr, "\n### %s\n%s\nusage: `%s`\n",
                 cmd->name, cmd->help, cmd->usage ? cmd->usage : cmd->name);
 
-        ptr += sprintf(ptr, "\n## API functions\n");
+    ptr += sprintf(ptr, "\n## API functions\n");
 
         FOR(const ApiItem*, api, Api)
             ptr += sprintf(ptr, "\n### %s\n`%s`\n%s\n", api->name, api->def, api->help);
+
+    // Threads section
+    ptr += sprintf(ptr, "\n## Threads\n");
+    ptr += sprintf(ptr, "\nRun scripts in background threads (Lua/JS/Python):\n");
+    ptr += sprintf(ptr, "\n### Functions\n");
+    ptr += sprintf(ptr, "- thread_run(code) -> id\n");
+    ptr += sprintf(ptr, "- thread_poll(id) -> done, result|nil, error|nil\n");
+    ptr += sprintf(ptr, "- thread_join(id) -> done, result|nil, error|nil\n");
+    ptr += sprintf(ptr, "\nNotes:\n- Each worker runs in an isolated VM.\n- On some platforms threads may be unavailable.\n");
+    ptr += sprintf(ptr, "\n### Lua tic_call\n");
+    ptr += sprintf(ptr, "Use from Lua worker threads to safely access TIC APIs on the main thread.\n");
+    ptr += sprintf(ptr, "`tic_call(name, ...)`\n\n");
+    ptr += sprintf(ptr, "Supported names: cls, trace, time, pmem, rect, line, pix, print.\n");
+    ptr += sprintf(ptr, "Returns a value when the API has a return (e.g., print -> width, pix(x,y) -> color).\n");
+    ptr += sprintf(ptr, "\nExamples:\n\n");
+    ptr += sprintf(ptr, "```lua\n");
+    ptr += sprintf(ptr, "tic_call('cls', 0)\n");
+    ptr += sprintf(ptr, "local c = tic_call('pix', 10, 10)\n");
+    ptr += sprintf(ptr, "local w = tic_call('print', 'hi', 0, 0, 15)\n");
+    ptr += sprintf(ptr, "```\n");
 
         ptr += sprintf(ptr, "\n## Button IDs\n");
         ptr += sprintf(ptr, "```");
@@ -3802,6 +3824,39 @@ static void onHelp_license(Console* console)
 {
     printLine(console);
     printBack(console, LicenseText);
+}
+
+// Threads help topic: describe thread_* functions and basics
+static void onHelp_threads(Console* console)
+{
+    printLine(console);
+    printFront(console, "\nThreads:\n");
+    printBack(console,
+        "Run scripts in background threads (Lua/JS/Python):\n"
+        "- thread_run(code) -> id\n"
+        "- thread_poll(id) -> done, result|nil, error|nil\n"
+        "- thread_join(id) -> done, result|nil, error|nil\n\n"
+        "Notes:\n"
+        "- Each worker runs in an isolated VM.\n"
+        "- On some platforms threads may be unavailable.\n"
+        "- TIC APIs are not directly available in workers; see 'help tic_call' for Lua.\n");
+}
+
+// Lua tic_call help topic: explain safe main-thread API bridging from worker VMs
+static void onHelp_tic_call(Console* console)
+{
+    printLine(console);
+    printFront(console, "\nLua tic_call:\n");
+    printBack(console,
+        "In Lua worker threads, call main-thread TIC API safely:\n"
+        "  tic_call(name, ...)\n\n"
+        "Supported names: cls, trace, time, pmem, rect, line, pix, print.\n"
+        "Returns: a value when the API has a return (e.g., print -> width, pix(x,y) -> color).\n\n"
+        "Examples:\n"
+        "  tic_call('cls', 0)\n"
+        "  local c = tic_call('pix', 10, 10)\n"
+        "  local w = tic_call('print', 'hi', 0, 0, 15)\n\n"
+        "Notes: Calls are queued and executed on the main thread during frames.\n");
 }
 
 static void onHelpCommand(Console* console)

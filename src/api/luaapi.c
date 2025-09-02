@@ -27,8 +27,397 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include <ctype.h>
+#include <string.h>
 
 extern bool parse_note(const char* noteStr, s32* note, s32* octave);
+
+#if defined(__unix__) || defined(__APPLE__)
+#define TIC80_LUA_THREADS 1
+#include <pthread.h>
+#include <errno.h>
+#else
+#define TIC80_LUA_THREADS 0
+#endif
+
+// Forward declaration for worker bridge
+static s32 lua_tic_call(lua_State* L);
+
+// Simple background Lua thread runner for UNIX-like systems.
+// Exposes thread_run(code), thread_poll(id), thread_join(id) to Lua.
+// Note: runs code in a separate Lua state without access to TIC APIs.
+// It should be used for pure computations; returns concatenated tostring() results.
+
+#if TIC80_LUA_THREADS
+typedef struct LuaThreadJob {
+    int id;
+    pthread_t th;
+    int done;              // 0/1
+    char* result;          // malloc'd string on success
+    char* error;           // malloc'd string on failure
+} LuaThreadJob;
+
+static pthread_mutex_t s_jobs_mutex = PTHREAD_MUTEX_INITIALIZER;
+static LuaThreadJob* s_jobs = NULL;
+static int s_jobs_count = 0;
+static int s_jobs_cap = 0;
+static int s_next_id = 1;
+
+static LuaThreadJob* find_job_nolock(int id)
+{
+    for (int i = 0; i < s_jobs_count; ++i) if (s_jobs[i].id == id) return &s_jobs[i];
+    return NULL;
+}
+
+static LuaThreadJob* add_job_nolock()
+{
+    if (s_jobs_count == s_jobs_cap)
+    {
+        int ncap = s_jobs_cap ? s_jobs_cap * 2 : 8;
+        LuaThreadJob* nbuf = (LuaThreadJob*)realloc(s_jobs, ncap * sizeof(LuaThreadJob));
+        if (!nbuf) return NULL;
+        s_jobs = nbuf; s_jobs_cap = ncap;
+    }
+    LuaThreadJob* j = &s_jobs[s_jobs_count++];
+    memset(j, 0, sizeof(*j));
+    j->id = s_next_id++;
+    return j;
+}
+
+typedef struct {
+    int id;
+    char* code;
+} LuaThreadEntryArg;
+
+static void* lua_thread_entry(void* argp)
+{
+    LuaThreadEntryArg* a = (LuaThreadEntryArg*)argp;
+    int id = a->id;
+    char* code = a->code;
+    free(a);
+
+    lua_State* L = luaL_newstate();
+    if (!L)
+    {
+        pthread_mutex_lock(&s_jobs_mutex);
+        LuaThreadJob* j = find_job_nolock(id);
+        if (j) { j->error = strdup("luaL_newstate failed"); j->done = 1; }
+        pthread_mutex_unlock(&s_jobs_mutex);
+        free(code);
+        return NULL;
+    }
+    luaL_openlibs(L);
+    // expose tic_call for async TIC API bridging
+    lua_pushcfunction(L, lua_tic_call);
+    lua_setglobal(L, "tic_call");
+
+    int status = luaL_loadstring(L, code);
+    if (status == LUA_OK)
+    {
+        status = lua_pcall(L, 0, LUA_MULTRET, 0);
+    }
+
+    char* out = NULL;
+    if (status == LUA_OK)
+    {
+        int n = lua_gettop(L);
+        // Concatenate tostring of all return values separated by tabs
+        size_t total = 0;
+        for (int i = 1; i <= n; ++i)
+        {
+            size_t l; luaL_tolstring(L, i, &l); lua_pop(L, 1); total += l + 1; // +1 for possible tab
+        }
+        if (n == 0) total = 0;
+        out = (char*)malloc(total + 1);
+        if (out)
+        {
+            size_t off = 0;
+            for (int i = 1; i <= n; ++i)
+            {
+                size_t l; const char* s = luaL_tolstring(L, i, &l);
+                if (s)
+                {
+                    memcpy(out + off, s, l); off += l; lua_pop(L, 1);
+                }
+                if (i < n) out[off++] = '\t';
+            }
+            out[off] = '\0';
+        }
+    }
+
+    pthread_mutex_lock(&s_jobs_mutex);
+    LuaThreadJob* j = find_job_nolock(id);
+    if (j)
+    {
+        if (status == LUA_OK) j->result = out; else { j->error = strdup(lua_tostring(L, -1)); free(out); }
+        j->done = 1;
+    }
+    pthread_mutex_unlock(&s_jobs_mutex);
+
+    lua_close(L);
+    free(code);
+    return NULL;
+}
+
+static s32 lua_thread_run(lua_State* lua)
+{
+    s32 top = lua_gettop(lua);
+    if (top < 1 || !lua_isstring(lua, 1))
+        return luaL_error(lua, "invalid parameters, thread_run(code_string)\n");
+
+    size_t len = 0; const char* code = lua_tolstring(lua, 1, &len);
+    char* codecpy = (char*)malloc(len + 1);
+    if (!codecpy) return luaL_error(lua, "out of memory\n");
+    memcpy(codecpy, code, len); codecpy[len] = '\0';
+
+    pthread_mutex_lock(&s_jobs_mutex);
+    LuaThreadJob* j = add_job_nolock();
+    if (!j) { pthread_mutex_unlock(&s_jobs_mutex); free(codecpy); return luaL_error(lua, "out of memory\n"); }
+    int id = j->id;
+    pthread_mutex_unlock(&s_jobs_mutex);
+
+    LuaThreadEntryArg* arg = (LuaThreadEntryArg*)malloc(sizeof(LuaThreadEntryArg));
+    if (!arg) return luaL_error(lua, "out of memory\n");
+    arg->id = id; arg->code = codecpy;
+
+    int rc = pthread_create(&j->th, NULL, lua_thread_entry, arg);
+    if (rc != 0)
+    {
+        pthread_mutex_lock(&s_jobs_mutex);
+        // mark as done with error
+        j->error = strdup("pthread_create failed");
+        j->done = 1;
+        pthread_mutex_unlock(&s_jobs_mutex);
+    }
+
+    lua_pushinteger(lua, id);
+    return 1;
+}
+
+static s32 lua_thread_poll(lua_State* lua)
+{
+    s32 top = lua_gettop(lua);
+    if (top < 1) return luaL_error(lua, "invalid parameters, thread_poll(id)\n");
+    int id = (int)lua_tointeger(lua, 1);
+    pthread_mutex_lock(&s_jobs_mutex);
+    LuaThreadJob* j = find_job_nolock(id);
+    if (!j) { pthread_mutex_unlock(&s_jobs_mutex); lua_pushboolean(lua, 1); lua_pushnil(lua); lua_pushstring(lua, "invalid id"); return 3; }
+    int done = j->done;
+    const char* res = j->result;
+    const char* err = j->error;
+    pthread_mutex_unlock(&s_jobs_mutex);
+
+    lua_pushboolean(lua, done);
+    if (done)
+    {
+        if (err) { lua_pushnil(lua); lua_pushstring(lua, err); }
+        else { lua_pushstring(lua, res ? res : ""); lua_pushnil(lua); }
+        return 3;
+    }
+    else
+    {
+        lua_pushnil(lua); lua_pushnil(lua); return 3;
+    }
+}
+
+static s32 lua_thread_join(lua_State* lua)
+{
+    s32 top = lua_gettop(lua);
+    if (top < 1) return luaL_error(lua, "invalid parameters, thread_join(id)\n");
+    int id = (int)lua_tointeger(lua, 1);
+
+    pthread_mutex_lock(&s_jobs_mutex);
+    LuaThreadJob* j = find_job_nolock(id);
+    pthread_mutex_unlock(&s_jobs_mutex);
+    if (!j) { lua_pushboolean(lua, 1); lua_pushnil(lua); lua_pushstring(lua, "invalid id"); return 3; }
+
+    // join thread if still running
+    if (!j->done) pthread_join(j->th, NULL);
+
+    // return final status
+    return lua_thread_poll(lua);
+}
+#else // TIC80_LUA_THREADS
+static s32 lua_thread_run(lua_State* lua)
+{
+    return luaL_error(lua, "threads not supported on this platform\n");
+}
+static s32 lua_thread_poll(lua_State* lua)
+{
+    lua_pushboolean(lua, 1); lua_pushnil(lua); lua_pushstring(lua, "threads not supported"); return 3;
+}
+static s32 lua_thread_join(lua_State* lua)
+{
+    lua_pushboolean(lua, 1); lua_pushnil(lua); lua_pushstring(lua, "threads not supported"); return 3;
+}
+#endif // TIC80_LUA_THREADS
+
+// ---- Async TIC API calls from worker VMs (Lua) ----
+#if TIC80_LUA_THREADS
+typedef enum {
+    LUA_API_CLS = 1,
+    LUA_API_TRACE,
+    LUA_API_TIME,
+    LUA_API_PMEM,
+    LUA_API_RECT,
+    LUA_API_LINE,
+    LUA_API_PIX,
+    LUA_API_PRINT,
+} LuaApiFn;
+
+typedef enum { LUA_RET_NONE=0, LUA_RET_INT=1, LUA_RET_FLOAT=2, LUA_RET_STRING=3 } LuaRetType;
+
+typedef struct LuaApiCall {
+    struct LuaApiCall* next;
+    LuaApiFn fn;
+    // numeric args
+    double num[8];
+    int numc;
+    // one optional string (for print/trace)
+    char* str;
+    // return
+    LuaRetType rtype;
+    int iret; double dret; char* sret;
+    // sync
+    int done;
+    pthread_mutex_t mtx;
+    pthread_cond_t cv;
+} LuaApiCall;
+
+static pthread_mutex_t s_lua_apiq_mtx = PTHREAD_MUTEX_INITIALIZER;
+static LuaApiCall* s_lua_apiq_head = NULL;
+static LuaApiCall* s_lua_apiq_tail = NULL;
+
+static void lua_apiq_push(LuaApiCall* c)
+{
+    pthread_mutex_lock(&s_lua_apiq_mtx);
+    if (!s_lua_apiq_tail) s_lua_apiq_head = s_lua_apiq_tail = c;
+    else { s_lua_apiq_tail->next = c; s_lua_apiq_tail = c; }
+    pthread_mutex_unlock(&s_lua_apiq_mtx);
+}
+
+static LuaApiFn lua_api_name_to_id(const char* name)
+{
+    if (!name) return 0;
+    if (!strcmp(name, "cls")) return LUA_API_CLS;
+    if (!strcmp(name, "trace")) return LUA_API_TRACE;
+    if (!strcmp(name, "time")) return LUA_API_TIME;
+    if (!strcmp(name, "pmem")) return LUA_API_PMEM;
+    if (!strcmp(name, "rect")) return LUA_API_RECT;
+    if (!strcmp(name, "line")) return LUA_API_LINE;
+    if (!strcmp(name, "pix")) return LUA_API_PIX;
+    if (!strcmp(name, "print")) return LUA_API_PRINT;
+    return 0;
+}
+
+// Worker-side function: tic_call(name, ...)
+static s32 lua_tic_call(lua_State* L)
+{
+    int top = lua_gettop(L);
+    if (top < 1 || !lua_isstring(L, 1)) return luaL_error(L, "tic_call(name, ...)\n");
+    const char* name = lua_tostring(L, 1);
+    LuaApiFn fn = lua_api_name_to_id(name);
+    if (!fn) return luaL_error(L, "unsupported api: %s\n", name);
+
+    LuaApiCall* c = (LuaApiCall*)calloc(1, sizeof(LuaApiCall));
+    if (!c) return luaL_error(L, "oom\n");
+    c->fn = fn; c->next = NULL; c->numc = 0; c->str = NULL; c->rtype = LUA_RET_NONE; c->done = 0;
+    pthread_mutex_init(&c->mtx, NULL);
+    pthread_cond_init(&c->cv, NULL);
+
+    // pack args (allow up to 8 numeric; one string as first string seen)
+    for (int i = 2; i <= top && c->numc < 8; ++i)
+    {
+        if (lua_isnumber(L, i)) c->num[c->numc++] = lua_tonumber(L, i);
+        else if (!c->str && lua_isstring(L, i)) c->str = strdup(lua_tostring(L, i));
+        else if (lua_isboolean(L, i)) c->num[c->numc++] = lua_toboolean(L, i) ? 1.0 : 0.0;
+    }
+
+    // enqueue and wait
+    lua_apiq_push(c);
+    pthread_mutex_lock(&c->mtx);
+    while (!c->done) pthread_cond_wait(&c->cv, &c->mtx);
+    pthread_mutex_unlock(&c->mtx);
+
+    // return value
+    s32 nret = 0;
+    switch (c->rtype)
+    {
+        case LUA_RET_INT: lua_pushinteger(L, c->iret); nret = 1; break;
+        case LUA_RET_FLOAT: lua_pushnumber(L, c->dret); nret = 1; break;
+        case LUA_RET_STRING: lua_pushstring(L, c->sret ? c->sret : ""); nret = 1; break;
+        default: nret = 0; break;
+    }
+
+    // cleanup
+    if (c->str) free(c->str);
+    if (c->sret) free(c->sret);
+    pthread_cond_destroy(&c->cv);
+    pthread_mutex_destroy(&c->mtx);
+    free(c);
+    return nret;
+}
+
+// Main thread: process queued API calls
+void lua_service_async_calls(tic_core* core)
+{
+    for(;;)
+    {
+        pthread_mutex_lock(&s_lua_apiq_mtx);
+        LuaApiCall* c = s_lua_apiq_head;
+        if (c) { s_lua_apiq_head = c->next; if (!s_lua_apiq_head) s_lua_apiq_tail = NULL; }
+        pthread_mutex_unlock(&s_lua_apiq_mtx);
+        if (!c) break;
+
+        tic_mem* tic = (tic_mem*)core;
+        switch (c->fn)
+        {
+            case LUA_API_CLS:
+                core->api.cls(tic, c->numc>0 ? (u8)c->num[0] : 0);
+                c->rtype = LUA_RET_NONE; break;
+            case LUA_API_TRACE:
+                core->api.trace(tic, c->str? c->str : "", c->numc>0 ? (u8)c->num[0] : TIC_DEFAULT_COLOR);
+                c->rtype = LUA_RET_NONE; break;
+            case LUA_API_TIME:
+                c->rtype = LUA_RET_FLOAT; c->dret = core->api.time(tic); break;
+            case LUA_API_PMEM:
+            {
+                s32 idx = c->numc>0 ? (s32)c->num[0] : 0;
+                bool set = c->numc>1; u32 val = set ? (u32)c->num[1] : 0;
+                u32 old = core->api.pmem(tic, idx, val, set);
+                c->rtype = LUA_RET_INT; c->iret = (s32)old; break;
+            }
+            case LUA_API_RECT:
+                if (c->numc>=5) core->api.rect(tic,(s32)c->num[0],(s32)c->num[1],(s32)c->num[2],(s32)c->num[3],(u8)c->num[4]);
+                c->rtype = LUA_RET_NONE; break;
+            case LUA_API_LINE:
+                if (c->numc>=5) core->api.line(tic,(float)c->num[0],(float)c->num[1],(float)c->num[2],(float)c->num[3],(u8)c->num[4]);
+                c->rtype = LUA_RET_NONE; break;
+            case LUA_API_PIX:
+            {
+                s32 x = c->numc>0?(s32)c->num[0]:0, y = c->numc>1?(s32)c->num[1]:0;
+                if (c->numc>=3) { core->api.pix(tic, x, y, (u8)c->num[2], false); c->rtype=LUA_RET_NONE; }
+                else { c->rtype=LUA_RET_INT; c->iret = core->api.pix(tic, x, y, 0, true); }
+                break;
+            }
+            case LUA_API_PRINT:
+            {
+                const char* text = c->str? c->str : "";
+                s32 x = c->numc>0?(s32)c->num[0]:0;
+                s32 y = c->numc>1?(s32)c->num[1]:0;
+                u8 color = c->numc>2?(u8)c->num[2]:TIC_DEFAULT_COLOR;
+                bool fixed = c->numc>3?(bool)(s32)c->num[3]:false;
+                s32 scale = c->numc>4?(s32)c->num[4]:1;
+                bool alt = c->numc>5?(bool)(s32)c->num[5]:false;
+                s32 w = core->api.print(tic, text, x, y, color, fixed, scale, alt);
+                c->rtype = LUA_RET_INT; c->iret = w;
+                break;
+            }
+        }
+
+        pthread_mutex_lock(&c->mtx); c->done = 1; pthread_cond_signal(&c->cv); pthread_mutex_unlock(&c->mtx);
+    }
+}
+#endif // TIC80_LUA_THREADS
 
 static inline s32 getLuaNumber(lua_State* lua, s32 index)
 {
@@ -1648,6 +2037,10 @@ void luaapi_init(tic_core* core)
 
     registerLuaFunction(core, lua_dofile, "dofile");
     registerLuaFunction(core, lua_loadfile, "loadfile");
+    // Thread helpers (UNIX-only): thread_run, thread_poll, thread_join
+    registerLuaFunction(core, lua_thread_run, "thread_run");
+    registerLuaFunction(core, lua_thread_poll, "thread_poll");
+    registerLuaFunction(core, lua_thread_join, "thread_join");
 }
 
 void luaapi_close(tic_mem* tic)

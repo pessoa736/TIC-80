@@ -4,6 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "pocketpy.h"
+#if defined(__unix__) || defined(__APPLE__)
+#define TIC80_PY_THREADS 1
+#include <pthread.h>
+#else
+#define TIC80_PY_THREADS 0
+#endif
 
 /*
 cmake -B build2 -A x64 -DCMAKE_BUILD_TYPE=MinSizeRel -DBUILD_SDLGPU=On -DBUILD_STATIC=On -DBUILD_WITH_ALL=Off -DBUILD_WITH_PYTHON=On
@@ -33,6 +39,92 @@ static void log_and_clearexc(py_Ref p0)
     PK_FREE(msg);
     py_clearexc(p0);
 }
+
+#if TIC80_PY_THREADS
+typedef struct PyThreadJob {
+    int id;
+    pthread_t th;
+    int done;
+    char* result;
+    char* error;
+} PyThreadJob;
+
+static pthread_mutex_t s_py_jobs_mutex = PTHREAD_MUTEX_INITIALIZER;
+static PyThreadJob* s_py_jobs = NULL; static int s_py_jobs_count = 0; static int s_py_jobs_cap = 0; static int s_py_next_id = 1;
+static PyThreadJob* py_find_job_nolock(int id){ for(int i=0;i<s_py_jobs_count;++i) if(s_py_jobs[i].id==id) return &s_py_jobs[i]; return NULL; }
+static PyThreadJob* py_add_job_nolock(){ if(s_py_jobs_count==s_py_jobs_cap){ int nc=s_py_jobs_cap? s_py_jobs_cap*2:8; PyThreadJob* nb=realloc(s_py_jobs, nc*sizeof(PyThreadJob)); if(!nb) return NULL; s_py_jobs=nb; s_py_jobs_cap=nc;} PyThreadJob* j=&s_py_jobs[s_py_jobs_count++]; memset(j,0,sizeof(*j)); j->id=s_py_next_id++; return j; }
+
+typedef struct { int id; char* code; } PyThreadArg;
+
+static void* py_thread_entry(void* ap)
+{
+    PyThreadArg* a = (PyThreadArg*)ap; int id=a->id; char* code=a->code; free(a);
+    // Create independent VM
+    py_Ref vm = py_newvm();
+    if(!vm){ pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); if(j){ j->error=strdup("py_newvm failed"); j->done=1; } pthread_mutex_unlock(&s_py_jobs_mutex); free(code); return NULL; }
+    py_usevm(vm);
+    py_initialize();
+
+    char* out = NULL; char* err = NULL;
+    py_Ref res = py_exec(code, "worker.py");
+    if(py_isnull(res)){
+        char* msg = py_formatexc(); err = msg ? strdup(msg) : strdup("exception"); PK_FREE(msg); py_clearexc(NULL_REF);
+    }else{
+        char* s = py_str(res); if(s){ out = strdup(s); PK_FREE(s);} else out = strdup("");
+    }
+
+    pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); if(j){ j->result=out; j->error=err; j->done=1; } pthread_mutex_unlock(&s_py_jobs_mutex);
+
+    py_finalize();
+    py_delvm(vm);
+    free(code);
+    return NULL;
+}
+
+static bool py_thread_run(int argc, py_Ref argv)
+{
+    PY_CHECK_ARG_TYPE(0, tp_str);
+    const char* code = py_tostr(py_arg(0));
+    char* copy = strdup(code);
+    if(!copy){ TypeError("out of memory"); return false; }
+
+    pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_add_job_nolock(); if(!j){ pthread_mutex_unlock(&s_py_jobs_mutex); free(copy); TypeError("out of memory"); return false; } int id=j->id; pthread_mutex_unlock(&s_py_jobs_mutex);
+
+    PyThreadArg* arg = (PyThreadArg*)malloc(sizeof(PyThreadArg)); if(!arg){ free(copy); TypeError("out of memory"); return false; }
+    arg->id = id; arg->code = copy;
+    int rc = pthread_create(&j->th, NULL, py_thread_entry, arg);
+    if(rc != 0){ pthread_mutex_lock(&s_py_jobs_mutex); j->error=strdup("pthread_create failed"); j->done=1; pthread_mutex_unlock(&s_py_jobs_mutex); }
+
+    py_newint(py_retval(), id);
+    return true;
+}
+
+static bool py_thread_poll(int argc, py_Ref argv)
+{
+    PY_CHECK_ARG_TYPE(0, tp_int);
+    int id = py_toint(py_arg(0));
+    pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); int done=j?j->done:1; char* res=j?j->result:NULL; char* err=j?j->error:"invalid id"; pthread_mutex_unlock(&s_py_jobs_mutex);
+    py_newtuple(py_retval(), 3);
+    py_newbool(py_tuple_get(py_retval(),0), done);
+    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
+    else { py_newnone(py_tuple_get(py_retval(),1)); py_newnone(py_tuple_get(py_retval(),2)); }
+    return true;
+}
+
+static bool py_thread_join(int argc, py_Ref argv)
+{
+    PY_CHECK_ARG_TYPE(0, tp_int);
+    int id = py_toint(py_arg(0));
+    pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); pthread_mutex_unlock(&s_py_jobs_mutex);
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+    if(!j->done) pthread_join(j->th, NULL);
+    return py_thread_poll(argc, argv);
+}
+#else
+static bool py_thread_run(int argc, py_Ref argv){ TypeError("threads not supported"); return false; }
+static bool py_thread_poll(int argc, py_Ref argv){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "threads not supported"); return true; }
+static bool py_thread_join(int argc, py_Ref argv){ return py_thread_poll(argc, argv); }
+#endif
 
 static int prepare_colorindex(py_Ref index, u8* buffer)
 {
@@ -1081,6 +1173,10 @@ static void bind_pkpy_v2()
     py_bind(mod, "trib(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, color: int)", py_trib);
     py_bind(mod, "tstamp() -> int", py_tstamp);
     py_bind(mod, "vbank(bank: int | None = None) -> int", py_vbank);
+    // Thread helpers (UNIX-only)
+    py_bind(mod, "thread_run(code: str) -> int", py_thread_run);
+    py_bind(mod, "thread_poll(id: int) -> tuple[bool, str | None, str | None]", py_thread_poll);
+    py_bind(mod, "thread_join(id: int) -> tuple[bool, str | None, str | None]", py_thread_join);
 }
 
 void close_pkpy_v2(tic_mem* tic)

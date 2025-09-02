@@ -30,6 +30,136 @@
 
 extern bool parse_note(const char* noteStr, s32* note, s32* octave);
 
+#if defined(__unix__) || defined(__APPLE__)
+#define TIC80_JS_THREADS 1
+#include <pthread.h>
+#include <errno.h>
+#else
+#define TIC80_JS_THREADS 0
+#endif
+
+#if TIC80_JS_THREADS
+typedef struct JsThreadJob {
+    int id;
+    pthread_t th;
+    int done;       // 0/1
+    char* result;   // malloc'd
+    char* error;    // malloc'd
+} JsThreadJob;
+
+static pthread_mutex_t s_js_jobs_mutex = PTHREAD_MUTEX_INITIALIZER;
+static JsThreadJob* s_js_jobs = NULL;
+static int s_js_jobs_count = 0;
+static int s_js_jobs_cap = 0;
+static int s_js_next_id = 1;
+
+static JsThreadJob* js_find_job_nolock(int id){ for(int i=0;i<s_js_jobs_count;++i) if(s_js_jobs[i].id==id) return &s_js_jobs[i]; return NULL; }
+static JsThreadJob* js_add_job_nolock(){ if(s_js_jobs_count==s_js_jobs_cap){ int nc=s_js_jobs_cap? s_js_jobs_cap*2:8; JsThreadJob* nb=realloc(s_js_jobs, nc*sizeof(JsThreadJob)); if(!nb) return NULL; s_js_jobs=nb; s_js_jobs_cap=nc;} JsThreadJob* j=&s_js_jobs[s_js_jobs_count++]; memset(j,0,sizeof(*j)); j->id=s_js_next_id++; return j; }
+
+typedef struct { int id; char* code; size_t len; } JsThreadArg;
+
+static char* js_dup_cstr(const char* s){ if(!s) return NULL; size_t l=strlen(s); char* o=malloc(l+1); if(o){ memcpy(o,s,l); o[l]='\0'; } return o; }
+
+static void* js_thread_entry(void* ap)
+{
+    JsThreadArg* a = (JsThreadArg*)ap;
+    int id = a->id; char* code = a->code; size_t len = a->len; free(a);
+
+    JSRuntime* rt = JS_NewRuntime();
+    if(!rt){ pthread_mutex_lock(&s_js_jobs_mutex); JsThreadJob* j=js_find_job_nolock(id); if(j){ j->error=js_dup_cstr("JS_NewRuntime failed"); j->done=1; } pthread_mutex_unlock(&s_js_jobs_mutex); free(code); return NULL; }
+    JSContext* ctx = JS_NewContext(rt);
+    if(!ctx){ pthread_mutex_lock(&s_js_jobs_mutex); JsThreadJob* j=js_find_job_nolock(id); if(j){ j->error=js_dup_cstr("JS_NewContext failed"); j->done=1; } pthread_mutex_unlock(&s_js_jobs_mutex); JS_FreeRuntime(rt); free(code); return NULL; }
+
+    JSValue ret = JS_Eval(ctx, code, len, "worker.js", JS_EVAL_TYPE_GLOBAL);
+    char* out = NULL; char* err = NULL;
+    if(JS_IsException(ret))
+    {
+        JSValue ex = JS_GetException(ctx);
+        const char* s = JS_ToCString(ctx, ex);
+        err = js_dup_cstr(s?s:"[exception]");
+        if(s) JS_FreeCString(ctx, s);
+        JS_FreeValue(ctx, ex);
+    }
+    else
+    {
+        const char* s = JS_ToCString(ctx, ret);
+        out = js_dup_cstr(s?s:"undefined");
+        if(s) JS_FreeCString(ctx, s);
+        JS_FreeValue(ctx, ret);
+    }
+
+    pthread_mutex_lock(&s_js_jobs_mutex);
+    JsThreadJob* j = js_find_job_nolock(id);
+    if(j){ j->result = out; j->error = err; j->done = 1; }
+    pthread_mutex_unlock(&s_js_jobs_mutex);
+
+    JS_FreeContext(ctx);
+    JS_FreeRuntime(rt);
+    free(code);
+    return NULL;
+}
+
+static JSValue js_thread_run(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv)
+{
+    if(argc < 1 || !JS_IsString(argv[0])) return JS_ThrowTypeError(ctx, "thread_run(code: string)");
+    size_t len=0; const char* code = JS_ToCStringLen(ctx, &len, argv[0]);
+    if(!code) return JS_ThrowInternalError(ctx, "invalid code string");
+
+    char* copy = (char*)malloc(len+1); if(!copy){ JS_FreeCString(ctx, code); return JS_ThrowOutOfMemory(ctx); }
+    memcpy(copy, code, len); copy[len]='\0'; JS_FreeCString(ctx, code);
+
+    pthread_mutex_lock(&s_js_jobs_mutex);
+    JsThreadJob* j = js_add_job_nolock();
+    if(!j){ pthread_mutex_unlock(&s_js_jobs_mutex); free(copy); return JS_ThrowOutOfMemory(ctx); }
+    int id = j->id;
+    pthread_mutex_unlock(&s_js_jobs_mutex);
+
+    JsThreadArg* arg = (JsThreadArg*)malloc(sizeof(JsThreadArg)); if(!arg){ return JS_ThrowOutOfMemory(ctx); }
+    arg->id = id; arg->code = copy; arg->len = len;
+    int rc = pthread_create(&j->th, NULL, js_thread_entry, arg);
+    if(rc != 0){ pthread_mutex_lock(&s_js_jobs_mutex); j->error = js_dup_cstr("pthread_create failed"); j->done = 1; pthread_mutex_unlock(&s_js_jobs_mutex); }
+
+    return JS_NewInt32(ctx, id);
+}
+
+static JSValue js_thread_poll(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv)
+{
+    if(argc < 1) return JS_ThrowTypeError(ctx, "thread_poll(id: number)");
+    int id = getInteger(ctx, argv[0]);
+    pthread_mutex_lock(&s_js_jobs_mutex);
+    JsThreadJob* j = js_find_job_nolock(id);
+    int done = j? j->done : 1;
+    const char* res = j? j->result : NULL;
+    const char* err = j? j->error : "invalid id";
+    pthread_mutex_unlock(&s_js_jobs_mutex);
+
+    JSValue obj = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, obj, "done", JS_NewBool(ctx, done));
+    if(done){
+        if(err) JS_SetPropertyStr(ctx, obj, "error", JS_NewString(ctx, err));
+        else JS_SetPropertyStr(ctx, obj, "result", JS_NewString(ctx, res ? res : ""));
+    }
+    return obj;
+}
+
+static JSValue js_thread_join(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv)
+{
+    if(argc < 1) return JS_ThrowTypeError(ctx, "thread_join(id: number)");
+    int id = getInteger(ctx, argv[0]);
+    pthread_mutex_lock(&s_js_jobs_mutex);
+    JsThreadJob* j = js_find_job_nolock(id);
+    pthread_mutex_unlock(&s_js_jobs_mutex);
+    if(!j){ JSValue obj = JS_NewObject(ctx); JS_SetPropertyStr(ctx, obj, "done", JS_NewBool(ctx, 1)); JS_SetPropertyStr(ctx, obj, "error", JS_NewString(ctx, "invalid id")); return obj; }
+
+    if(!j->done) pthread_join(j->th, NULL);
+    return js_thread_poll(ctx, this_val, 1, argv);
+}
+#else
+static JSValue js_thread_run(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv){ return JS_ThrowInternalError(ctx, "threads not supported"); }
+static JSValue js_thread_poll(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv){ JSValue o=JS_NewObject(ctx); JS_SetPropertyStr(ctx,o,"done",JS_NewBool(ctx,1)); JS_SetPropertyStr(ctx,o,"error",JS_NewString(ctx,"threads not supported")); return o; }
+static JSValue js_thread_join(JSContext *ctx, JSValueConst this_val, s32 argc, JSValueConst *argv){ JSValue o=JS_NewObject(ctx); JS_SetPropertyStr(ctx,o,"done",JS_NewBool(ctx,1)); JS_SetPropertyStr(ctx,o,"error",JS_NewString(ctx,"threads not supported")); return o; }
+#endif
+
 static inline tic_core* getCore(JSContext *ctx)
 {
     return JS_GetContextOpaque(ctx);
@@ -1056,6 +1186,11 @@ static bool initJavascript(tic_mem* tic, const char* code)
 #endif
 
 #undef  API_FUNC_DEF
+
+    // Register thread helpers
+    JS_SetPropertyStr(ctx, global, "thread_run", JS_NewCFunction(ctx, js_thread_run, "thread_run", 1));
+    JS_SetPropertyStr(ctx, global, "thread_poll", JS_NewCFunction(ctx, js_thread_poll, "thread_poll", 1));
+    JS_SetPropertyStr(ctx, global, "thread_join", JS_NewCFunction(ctx, js_thread_join, "thread_join", 1));
 
         JS_FreeValue(ctx, global);
     }
