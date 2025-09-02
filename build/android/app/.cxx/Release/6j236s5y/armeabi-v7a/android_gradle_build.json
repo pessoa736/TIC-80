@@ -1,0 +1,415 @@
+{
+  "stringTable": {},
+  "buildFiles": [
+    "/home/davi/Documentos/GitHub/TIC-80/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/zip/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/sdl2/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/pocketpy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+      "-C",
+      "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+    "-C",
+    "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "SDL2main-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "SDL2main"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2main",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libSDL2main.a"
+    },
+    "pocketpy-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "pocketpy"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "pocketpy",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libpocketpy.a"
+    },
+    "argparse-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "argparse"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "argparse",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libargparse.a"
+    },
+    "python-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "python"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "python",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libpython.a"
+    },
+    "OBJLIB-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "OBJLIB"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "OBJLIB"
+    },
+    "moon-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "moon"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "moon",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libmoon.a"
+    },
+    "quickjs-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "quickjs"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "quickjs",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libquickjs.a"
+    },
+    "blipbuf-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "blipbuf"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "blipbuf",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libblipbuf.a"
+    },
+    "tic80-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "tic80"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/bin/libtic80.so",
+      "runtimeFiles": []
+    },
+    "SDL2-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "SDL2"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/bin/libSDL2.so",
+      "runtimeFiles": []
+    },
+    "squirrel-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "squirrel"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "squirrel",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libsquirrel.a"
+    },
+    "tic80studio-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "tic80studio"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80studio",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libtic80studio.a"
+    },
+    "lua-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "lua"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "lua",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/liblua.a"
+    },
+    "wave_writer-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "wave_writer"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "wave_writer",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libwave_writer.a"
+    },
+    "scheme-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "scheme"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "scheme",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libscheme.a"
+    },
+    "sdl_headers_copy-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "sdl_headers_copy"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "sdl_headers_copy"
+    },
+    "giflib-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "giflib"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "giflib",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libgiflib.a"
+    },
+    "janet-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "janet"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "janet",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libjanet.a"
+    },
+    "SDL2-static-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "SDL2-static"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2-static",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libSDL2.a"
+    },
+    "uninstall-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "uninstall"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "uninstall"
+    },
+    "naett-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "naett"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "naett",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libnaett.a"
+    },
+    "luaapi-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "luaapi"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "luaapi",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libluaapi.a"
+    },
+    "lpeg-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "lpeg"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "lpeg",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/liblpeg.a"
+    },
+    "tic80core-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "tic80core"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "tic80core",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libtic80core.a"
+    },
+    "zip-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "zip"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "zip",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libzip.a"
+    },
+    "SDL2_test-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "SDL2_test"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "SDL2_test",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libSDL2_test.a"
+    },
+    "zlib-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "zlib"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "zlib",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libzlib.a"
+    },
+    "png-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "png"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "png",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libpng.a"
+    },
+    "wren-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "wren"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "wren",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libwren.a"
+    },
+    "js-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "js"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "js",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libjs.a"
+    },
+    "fennel-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "fennel"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "fennel",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libfennel.a"
+    },
+    "wasm-Release-armeabi-v7a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a",
+        "wasm"
+      ],
+      "buildType": "debug",
+      "abi": "armeabi-v7a",
+      "artifactName": "wasm",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a/lib/libwasm.a"
+    }
+  },
+  "toolchains": {},
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

@@ -1,0 +1,415 @@
+{
+  "stringTable": {},
+  "buildFiles": [
+    "/home/davi/Documentos/GitHub/TIC-80/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/zip/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/sdl2/CMakeLists.txt",
+    "/home/davi/Documentos/GitHub/TIC-80/vendor/pocketpy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+      "-C",
+      "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+    "-C",
+    "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "pocketpy-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "pocketpy"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "pocketpy",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libpocketpy.a"
+    },
+    "moon-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "moon"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "moon",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libmoon.a"
+    },
+    "python-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "python"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "python",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libpython.a"
+    },
+    "giflib-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "giflib"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "giflib",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libgiflib.a"
+    },
+    "quickjs-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "quickjs"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "quickjs",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libquickjs.a"
+    },
+    "tic80core-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "tic80core"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "tic80core",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libtic80core.a"
+    },
+    "lpeg-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "lpeg"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "lpeg",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/liblpeg.a"
+    },
+    "wren-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "wren"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "wren",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libwren.a"
+    },
+    "SDL2-static-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "SDL2-static"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "SDL2-static",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libSDL2.a"
+    },
+    "lua-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "lua"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "lua",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/liblua.a"
+    },
+    "wave_writer-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "wave_writer"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "wave_writer",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libwave_writer.a"
+    },
+    "SDL2-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "SDL2"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "SDL2",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/bin/libSDL2.so",
+      "runtimeFiles": []
+    },
+    "tic80-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "tic80"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "tic80",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/bin/libtic80.so",
+      "runtimeFiles": []
+    },
+    "tic80studio-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "tic80studio"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "tic80studio",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libtic80studio.a"
+    },
+    "OBJLIB-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "OBJLIB"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "OBJLIB"
+    },
+    "scheme-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "scheme"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "scheme",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libscheme.a"
+    },
+    "js-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "js"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "js",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libjs.a"
+    },
+    "luaapi-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "luaapi"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "luaapi",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libluaapi.a"
+    },
+    "blipbuf-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "blipbuf"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "blipbuf",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libblipbuf.a"
+    },
+    "uninstall-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "uninstall"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "uninstall"
+    },
+    "squirrel-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "squirrel"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "squirrel",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libsquirrel.a"
+    },
+    "sdl_headers_copy-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "sdl_headers_copy"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "sdl_headers_copy"
+    },
+    "SDL2main-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "SDL2main"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "SDL2main",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libSDL2main.a"
+    },
+    "SDL2_test-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "SDL2_test"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "SDL2_test",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libSDL2_test.a"
+    },
+    "janet-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "janet"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "janet",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libjanet.a"
+    },
+    "wasm-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "wasm"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "wasm",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libwasm.a"
+    },
+    "argparse-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "argparse"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "argparse",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libargparse.a"
+    },
+    "fennel-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "fennel"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "fennel",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libfennel.a"
+    },
+    "zlib-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "zlib"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "zlib",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libzlib.a"
+    },
+    "naett-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "naett"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "naett",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libnaett.a"
+    },
+    "png-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "png"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "png",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libpng.a"
+    },
+    "zip-Release-arm64-v8a": {
+      "buildCommandComponents": [
+        "/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja",
+        "-C",
+        "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a",
+        "zip"
+      ],
+      "buildType": "debug",
+      "abi": "arm64-v8a",
+      "artifactName": "zip",
+      "output": "/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/arm64-v8a/lib/libzip.a"
+    }
+  },
+  "toolchains": {},
+  "cFileExtensions": [
+    "c"
+  ],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

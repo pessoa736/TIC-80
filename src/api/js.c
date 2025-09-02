@@ -30,7 +30,11 @@
 
 extern bool parse_note(const char* noteStr, s32* note, s32* octave);
 
+<<<<<<< HEAD
 // Forward declarations for helpers used before their definitions
+=======
+// Forward declaration used by js_thread_poll/join
+>>>>>>> 7b672a31 (Add SDL Vulkan support and various build configurations)
 static s32 getInteger(JSContext *ctx, JSValueConst val);
 
 #if defined(__unix__) || defined(__APPLE__)

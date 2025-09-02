@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "pocketpy.h"
-#if defined(__unix__) || defined(__APPLE__)
+#if (defined(__unix__) || defined(__APPLE__)) && !defined(__ANDROID__)
 #define TIC80_PY_THREADS 1
 #include <pthread.h>
 #else
@@ -105,9 +105,9 @@ static bool py_thread_poll(int argc, py_Ref argv)
     int id = py_toint(py_arg(0));
     pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); int done=j?j->done:1; char* res=j?j->result:NULL; char* err=j?j->error:"invalid id"; pthread_mutex_unlock(&s_py_jobs_mutex);
     py_newtuple(py_retval(), 3);
-    py_newbool(py_tuple_get(py_retval(),0), done);
-    if(done){ if(err){ py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), err);} else { py_newstr(py_tuple_get(py_retval(),1), res?res:""); py_newnone(py_tuple_get(py_retval(),2)); } }
-    else { py_newnone(py_tuple_get(py_retval(),1)); py_newnone(py_tuple_get(py_retval(),2)); }
+    py_newbool(py_tuple_getitem(py_retval(),0), done);
+    if(done){ if(err){ py_newnone(py_tuple_getitem(py_retval(),1)); py_newstr(py_tuple_getitem(py_retval(),2), err);} else { py_newstr(py_tuple_getitem(py_retval(),1), res?res:""); py_newnone(py_tuple_getitem(py_retval(),2)); } }
+    else { py_newnone(py_tuple_getitem(py_retval(),1)); py_newnone(py_tuple_getitem(py_retval(),2)); }
     return true;
 }
 
@@ -116,13 +116,13 @@ static bool py_thread_join(int argc, py_Ref argv)
     PY_CHECK_ARG_TYPE(0, tp_int);
     int id = py_toint(py_arg(0));
     pthread_mutex_lock(&s_py_jobs_mutex); PyThreadJob* j=py_find_job_nolock(id); pthread_mutex_unlock(&s_py_jobs_mutex);
-    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "invalid id"); return true; }
+    if(!j){ py_newtuple(py_retval(),3); py_newbool(py_tuple_getitem(py_retval(),0),1); py_newnone(py_tuple_getitem(py_retval(),1)); py_newstr(py_tuple_getitem(py_retval(),2), "invalid id"); return true; }
     if(!j->done) pthread_join(j->th, NULL);
     return py_thread_poll(argc, argv);
 }
 #else
 static bool py_thread_run(int argc, py_Ref argv){ TypeError("threads not supported"); return false; }
-static bool py_thread_poll(int argc, py_Ref argv){ py_newtuple(py_retval(),3); py_newbool(py_tuple_get(py_retval(),0),1); py_newnone(py_tuple_get(py_retval(),1)); py_newstr(py_tuple_get(py_retval(),2), "threads not supported"); return true; }
+static bool py_thread_poll(int argc, py_Ref argv){ py_newtuple(py_retval(),3); py_newbool(py_tuple_getitem(py_retval(),0),1); py_newnone(py_tuple_getitem(py_retval(),1)); py_newstr(py_tuple_getitem(py_retval(),2), "threads not supported"); return true; }
 static bool py_thread_join(int argc, py_Ref argv){ return py_thread_poll(argc, argv); }
 #endif
 

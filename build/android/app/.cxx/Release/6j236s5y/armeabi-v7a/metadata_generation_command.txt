@@ -1,0 +1,26 @@
+                    Executable : /home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/cmake
+arguments : 
+-H/home/davi/Documentos/GitHub/TIC-80
+-DCMAKE_SYSTEM_NAME=Android
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+-DCMAKE_SYSTEM_VERSION=24
+-DANDROID_PLATFORM=android-24
+-DANDROID_ABI=armeabi-v7a
+-DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a
+-DANDROID_NDK=/home/davi/Android/Sdk/ndk/21.4.7075529
+-DCMAKE_ANDROID_NDK=/home/davi/Android/Sdk/ndk/21.4.7075529
+-DCMAKE_TOOLCHAIN_FILE=/home/davi/Android/Sdk/ndk/21.4.7075529/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/home/davi/Android/Sdk/cmake/3.10.2.4988404/bin/ninja
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/home/davi/Documentos/GitHub/TIC-80/build/android/app/build/intermediates/cxx/Release/6j236s5y/obj/armeabi-v7a
+-DCMAKE_RUNTIME_OUTPUT_DIRECTORY=/home/davi/Documentos/GitHub/TIC-80/build/android/app/build/intermediates/cxx/Release/6j236s5y/obj/armeabi-v7a
+-B/home/davi/Documentos/GitHub/TIC-80/build/android/app/.cxx/Release/6j236s5y/armeabi-v7a
+-GNinja
+-DBUILD_WITH_RUBY=OFF
+-DBUILD_PRO=Off
+-DCMAKE_BUILD_TYPE=Release
+-DBUILD_WITH_ALL=ON
+jvmArgs : 
+
+
+                    Build command args: []
+                    Version: 2
