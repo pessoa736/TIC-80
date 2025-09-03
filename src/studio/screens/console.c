@@ -136,11 +136,11 @@ static const char* WelcomeText =
     "In the end, you will get a cartridge file, which can be stored and played on the website.\n\n"
     "Also, the game can be packed into a player that works on all popular platforms and distributed as you wish.\n"
     "To make a retro-style game, the whole creation process takes place under some technical limitations: "
-    "240x136 pixels display, 16 color palette, 256 8x8 color sprites, 4 channel sound, etc.";
+    "480x270 pixels display, 16 color palette, 256 8x8 color sprites, 4 channel sound, etc.";
 
 static const struct SpecRow {const char* section; const char* info;} SpecText1[] =
 {
-    {"DISPLAY", "240x136 pixels, 16 colors palette."},
+    {"DISPLAY", "480x270 pixels, 16 colors palette."},
     {"INPUT",   "4 gamepads with 8 buttons / mouse / keyboard."},
     {"SPRITES", "256 8x8 tiles and 256 8x8 sprites."},
     {"MAP",     "240x136 cells, 1920x1088 pixels."},

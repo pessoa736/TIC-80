@@ -1703,8 +1703,11 @@ static void startVideoRecord(Studio* studio)
         studio->video.record = true;
         studio->video.frame = 0;
 
-        s32 scale = studio->config->data.uiScale;
-        msf_gif_begin(&studio->video.gif, TIC80_FULLWIDTH * scale, TIC80_FULLHEIGHT * scale);
+    float scale = studio->config->data.uiScale;
+    // GIF encoder needs integer dimensions; round to nearest
+    s32 gw = (s32)lrintf(TIC80_FULLWIDTH * scale);
+    s32 gh = (s32)lrintf(TIC80_FULLHEIGHT * scale);
+    msf_gif_begin(&studio->video.gif, gw, gh);
     }
 }
 
@@ -2020,15 +2023,15 @@ static void recordFrame(Studio* studio, u32* pixels)
     {
         if(studio->video.frame % 2 == 0)
         {
-            s32 scale = studio->config->data.uiScale;
-            s32 w = TIC80_FULLWIDTH * scale;
-            s32 h = TIC80_FULLHEIGHT * scale;
+            float scale = studio->config->data.uiScale;
+            s32 w = (s32)lrintf(TIC80_FULLWIDTH * scale);
+            s32 h = (s32)lrintf(TIC80_FULLHEIGHT * scale);
 
             u32 *ptr = studio->video.buffer;
             const u32 *src = pixels;
-            for(s32 y = 0; y < h; y++, src = pixels + (y / scale) * TIC80_FULLWIDTH)
+            for(s32 y = 0; y < h; y++, src = pixels + (s32)CLAMP(floorf((float)y / scale), 0, TIC80_FULLHEIGHT-1) * TIC80_FULLWIDTH)
                 for(s32 x = 0; x < w; x++)
-                    *ptr++ = src[x / scale];
+                    *ptr++ = src[(s32)CLAMP(floorf((float)x / scale), 0, TIC80_FULLWIDTH-1)];
 
             // with centiSecondsPerFame == 3 we have 1000/(3*10)=~33.3fps, so we have to save every second frame
             msf_gif_frame(&studio->video.gif, (u8*)studio->video.buffer, 3, 16, w * sizeof(u32));
@@ -2213,8 +2216,10 @@ void studioConfigChanged(Studio* studio)
     if(code->update)
         code->update(code);
 
-    s32 scale = studio->config->data.uiScale;
-    studio->video.buffer = realloc(studio->video.buffer, TIC80_FULLWIDTH * scale * TIC80_FULLHEIGHT * scale * sizeof(u32));
+    float scale = studio->config->data.uiScale;
+    s32 vw = (s32)lrintf(TIC80_FULLWIDTH * scale);
+    s32 vh = (s32)lrintf(TIC80_FULLHEIGHT * scale);
+    studio->video.buffer = realloc(studio->video.buffer, vw * vh * sizeof(u32));
 #endif
 
     updateSystemFont(studio);
@@ -2829,10 +2834,10 @@ Studio* studio_create(s32 argc, char **argv, s32 samplerate, tic80_pixel_color_f
 
     initConfig(studio->config, studio, studio->fs);
 
-    if (studio->config->data.uiScale > maxscale)
+    if (studio->config->data.uiScale > (float)maxscale)
     {
-        printf("Overriding specified uiScale of %i; the maximum your screen will accommodate is %i", studio->config->data.uiScale, maxscale);
-        studio->config->data.uiScale = maxscale;
+        printf("Overriding specified uiScale of %.2f; the maximum your screen will accommodate is %i", studio->config->data.uiScale, maxscale);
+        studio->config->data.uiScale = (float)maxscale;
     }
 
     initStart(studio->start, studio, args.cart);
@@ -2845,7 +2850,7 @@ Studio* studio_create(s32 argc, char **argv, s32 samplerate, tic80_pixel_color_f
 #endif
 
     if(args.scale)
-        studio->config->data.uiScale = args.scale;
+        studio->config->data.uiScale = (float)args.scale;
 
     if(args.volume >= 0)
         studio->config->data.options.volume = args.volume & 0x0f;

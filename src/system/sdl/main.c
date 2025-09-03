@@ -826,11 +826,16 @@ static bool isKbdVisible()
     SDL_Rect rect;
     calcTextureRect(&rect);
 
-    return h - rect.h - KBD_ROWS * w / KBD_COLS >= 0
 #if defined(__TIC_ANDROID__)
-        && !SDL_IsTextInputActive()
+    // On Android, always allow the virtual keyboard to appear as an overlay
+    // when text input is needed, unless the OS IME is active.
+    // This avoids layout-dependent disappearance at higher internal resolutions.
+    return !SDL_IsTextInputActive();
+#else
+    // For desktop and other platforms, keep the original space check to avoid
+    // covering content if there isn't room below the scaled screen.
+    return h - rect.h - KBD_ROWS * w / KBD_COLS >= 0;
 #endif
-        ;
 }
 
 static const tic_key KbdLayout[] =
@@ -845,7 +850,12 @@ static void processTouchKeyboardButton(SDL_Point pt)
     s32 w, h;
     SDL_GetWindowSize(platform.window, &w, &h);
 
-    SDL_Rect kbd = {0, h - Rows * w / Cols, w, Rows * w / Cols};
+#if defined(__TIC_ANDROID__)
+    // Overlay keyboard sticks to bottom and spans full width on Android
+    SDL_Rect kbd = {0, h - (Rows * w) / Cols, w, (Rows * w) / Cols};
+#else
+    SDL_Rect kbd = {0, h - (Rows * w) / Cols, w, (Rows * w) / Cols};
+#endif
 
     if(SDL_PointInRect(&pt, &kbd))
     {
@@ -1294,7 +1304,7 @@ static void renderKeyboard()
     SDL_GetWindowSize(platform.window, &rect.w, &rect.h);
 
     SDL_Rect src = {TIC80_OFFSET_LEFT, TIC80_OFFSET_TOP, KBD_COLS*TIC_SPRITESIZE, KBD_ROWS*TIC_SPRITESIZE};
-    SDL_Rect dst = {0, rect.h - src.h * rect.w / src.w, rect.w, src.h * rect.w / src.w};
+    SDL_Rect dst = {0, rect.h - (src.h * rect.w / src.w), rect.w, (src.h * rect.w / src.w)};
 
     renderCopy(platform.screen.renderer, platform.keyboard.touch.texture.up, src, dst);
 
@@ -1965,8 +1975,9 @@ static s32 start(s32 argc, char **argv, const char* folder)
             initSound();
 
             {
-                const s32 Width = TIC80_FULLWIDTH * studio_config(platform.studio)->uiScale;
-                const s32 Height = TIC80_FULLHEIGHT * studio_config(platform.studio)->uiScale;
+                const float uiScale = studio_config(platform.studio)->uiScale;
+                const s32 Width = (s32)lrintf(TIC80_FULLWIDTH * uiScale);
+                const s32 Height = (s32)lrintf(TIC80_FULLHEIGHT * uiScale);
 
                 s32 flags = SDL_WINDOW_SHOWN
 #if !defined(__EMSCRIPTEN__) && !defined(__MACOSX__)

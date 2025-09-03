@@ -716,3 +716,7 @@
 6	89	1756781290	CMakeFiles/python.dir/src/api/python.c.o	302dd28b84c300a7
 89	102	1756781290	lib/libpython.a	a4b99b24d2f28f9
 102	88037	1756781377	bin/libtic80.so	5767831e2f99ec40
+255	2750	1756908089	CMakeFiles/tic80core.dir/src/core/core.c.o	a7d0d06300bb0a08
+255	3027	1756908089	CMakeFiles/tic80.dir/src/system/sdl/main.c.o	202198b7da3190fb
+2750	3715	1756908090	lib/libtic80core.a	c350ff86a532f0ff
+3715	88056	1756908174	bin/libtic80.so	5767831e2f99ec40

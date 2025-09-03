@@ -147,7 +147,7 @@ typedef struct
 
     const tic_cartridge* cart;
 
-    s32 uiScale;
+    float uiScale;
 
     int fft;
     int fftcaptureplaybackdevices;

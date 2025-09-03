@@ -47,7 +47,9 @@ With TIC-80 you get built-in tools for development: code, sprites, maps, sound e
 
 Games are packaged into a cartridge file, which can be easily distributed. TIC-80 works on all popular platforms. This means your cartridge can be played in any device.
 
-To make a retro styled game, the whole process of creation and execution takes place under some technical limitations: 240x136 pixel display, 16 color palette, 256 8x8 color sprites, 4 channel sound, etc.
+To make a retro styled game, the whole process of creation and execution takes place under some technical limitations: 16 color palette, 256 8x8 color sprites, 4 channel sound, etc.
+
+Note about this fork: The default in-app display has been increased to 480x270 (2x the classic 240x136). See Fork notes below for details.
 
 ![TIC-80](https://user-images.githubusercontent.com/1101448/92492270-d6bcbc80-f1fb-11ea-9d2d-468ad015ace2.gif)
 
@@ -101,6 +103,19 @@ Keep in mind when engaging on a discussion to follow our [Code of Conduct](https
 
 You can also contribute by reviewing or improving our [Wiki](https://github.com/nesbox/TIC-80/wiki).
 The wiki holds TIC-80 documentation, code snippets and game development tutorials.
+
+## Fork notes (this repository)
+- Screen: 480x270 rendering resolution (was 240x136). Use TIC80_WIDTH/TIC80_HEIGHT from `include/tic80.h` instead of hardcoding.
+- Threaded virtual API: run scripts in parallel VMs (Lua, JavaScript; Python on UNIX/macOS). See Threads API.
+- Async TIC bridge from workers: limited set of TIC calls via `tic_call(...)` from Lua workers. See Async TIC bridge.
+- Android: virtual keyboard behaves as a bottom overlay, resolution-independent.
+- Embedding: new C helper `tic80_get_screen_info(...)` exposes runtime sizes for frontends.
+
+Quick links:
+- Threads API (virtual): docs/threads.md
+- Async TIC bridge (tic_call): docs/tic_call.md
+- Screen and scaling guidance: docs/screen.md
+- Android build and notes: docs/android.md
 
 # Build instructions
 

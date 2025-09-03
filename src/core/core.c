@@ -708,6 +708,16 @@ static inline void updbdr(tic_mem* tic, s32 row, u32* ptr, tic_blit_callback clb
     memset4(ptr, pal0->data[vbank0(core)->vars.border], TIC80_FULLWIDTH);
 }
 
+// Expose runtime screen info so frontends can avoid hardcoded sizes
+TIC80_API void tic80_get_screen_info(s32* width, s32* height, s32* fullwidth, s32* fullheight, s32* bpp)
+{
+    if(width) *width = TIC80_WIDTH;
+    if(height) *height = TIC80_HEIGHT;
+    if(fullwidth) *fullwidth = TIC80_FULLWIDTH;
+    if(fullheight) *fullheight = TIC80_FULLHEIGHT;
+    if(bpp) *bpp = 32;
+}
+
 static inline u32 blitpix(tic_mem* tic, s32 offset0, s32 offset1, const tic_blitpal* pal0, const tic_blitpal* pal1)
 {
     tic_core* core = (tic_core*)tic;

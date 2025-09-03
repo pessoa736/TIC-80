@@ -46,12 +46,24 @@ static void readConfig(Config* config)
     if(json_parse(json, strlen(json)))
     {
         config->data.checkNewVersion = json_bool("CHECK_NEW_VERSION", 0);
-        config->data.uiScale = json_int("UI_SCALE", 0);
+        // UI_SCALE may be integer or float in config JSON; try to read as string then parse
+        {
+            char tmp[32] = {0};
+            if(json_string("UI_SCALE", 0, tmp, sizeof tmp))
+            {
+                config->data.uiScale = strtof(tmp, NULL);
+            }
+            else
+            {
+                // fallback to integer read for backward compatibility
+                config->data.uiScale = (float)json_int("UI_SCALE", 0);
+            }
+        }
         config->data.soft = json_bool("SOFTWARE_RENDERING", 0);
         config->data.trim = json_bool("TRIM_ON_SAVE", 0);
 
-        if(config->data.uiScale <= 0)
-            config->data.uiScale = 1;
+        if(config->data.uiScale <= 0.0f)
+            config->data.uiScale = 1.0f;
 
         config->data.theme.gamepad.touch.alpha = json_int("GAMEPAD_TOUCH_ALPHA", 0);
 
@@ -86,7 +98,7 @@ static void setDefault(Config* config)
     config->data = (StudioConfig)
     {
         .cart = config->cart,
-        .uiScale = 4,
+    .uiScale = 4.0f,
         .options =
         {
 #if defined(CRT_SHADER_SUPPORT)
